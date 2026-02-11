@@ -31,18 +31,27 @@ body {
     color: var(--text-dark);
     background: var(--bg-light);
     line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    width: 100%;
 }
 
 .home {
     min-height: 100vh;
+    width: 100%;
+    margin: 0;
+    padding: 0;
 }
 
 /* Hero Section */
 .hero {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 80px 20px 120px;
+    padding: 80px 0 120px;
     position: relative;
     overflow: hidden;
+    width: 100%;
+    margin: 0;
 }
 
 .hero::before {
@@ -59,10 +68,11 @@ body {
 }
 
 .hero-content {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     position: relative;
     z-index: 1;
+    padding: 0 40px;
 }
 
 .hero-title {
@@ -196,21 +206,36 @@ body {
 /* Section Styles */
 .destinations,
 .properties {
-    max-width: 1200px;
+    width: 100%;
+    margin: 0;
+    padding: 80px 0;
+}
+
+.destinations > *:not(.destinations-grid),
+.properties > *:not(.properties-grid) {
+    max-width: 1400px;
     margin: 0 auto;
-    padding: 80px 20px;
+    padding: 0 40px;
+}
+
+.destinations-grid,
+.properties-grid {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 40px;
 }
 
 .special-offers {
     width: 100%;
     background: var(--bg-light);
     padding: 80px 0;
+    margin: 0;
 }
 
 .special-offers .container {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 0 40px;
 }
 
 .section-header {
@@ -572,7 +597,7 @@ body {
 .newsletter {
     width: 100%;
     background: var(--primary);
-    padding: 100px 20px;
+    padding: 100px 40px;
     text-align: center;
     margin: 0;
 }
@@ -838,6 +863,18 @@ body {
         font-size: 2rem;
     }
 
+    .hero-content {
+        padding: 0 32px;
+    }
+
+    .destinations > *:not(.destinations-grid),
+    .properties > *:not(.properties-grid),
+    .destinations-grid,
+    .properties-grid,
+    .special-offers .container {
+        padding: 0 32px;
+    }
+
     .footer-content {
         grid-template-columns: repeat(3, 1fr);
         gap: 40px;
@@ -855,7 +892,7 @@ body {
 
 @media (max-width: 768px) {
     .hero {
-        padding: 60px 20px 80px;
+        padding: 60px 0 80px;
     }
 
     .hero-title {
@@ -864,6 +901,10 @@ body {
 
     .hero-subtitle {
         font-size: 1rem;
+    }
+
+    .hero-content {
+        padding: 0 24px;
     }
 
     .search-inputs {
@@ -878,11 +919,22 @@ body {
 
     .destinations,
     .properties {
-        padding: 60px 20px;
+        padding: 60px 0;
+    }
+
+    .destinations > *:not(.destinations-grid),
+    .properties > *:not(.properties-grid),
+    .destinations-grid,
+    .properties-grid {
+        padding: 0 24px;
     }
 
     .special-offers {
         padding: 60px 0;
+    }
+
+    .special-offers .container {
+        padding: 0 24px;
     }
 
     .section-header {
@@ -903,7 +955,7 @@ body {
     }
 
     .newsletter {
-        padding: 70px 20px;
+        padding: 70px 24px;
     }
 
     .newsletter h2 {
@@ -952,6 +1004,10 @@ body {
         font-size: 1.875rem;
     }
 
+    .hero-content {
+        padding: 0 20px;
+    }
+
     .search-form {
         padding: 20px;
     }
@@ -961,8 +1017,16 @@ body {
         font-size: 1rem;
     }
 
+    .destinations > *:not(.destinations-grid),
+    .properties > *:not(.properties-grid),
+    .destinations-grid,
+    .properties-grid,
+    .special-offers .container {
+        padding: 0 20px;
+    }
+
     .newsletter {
-        padding: 60px 16px;
+        padding: 60px 20px;
     }
 
     .newsletter h2 {
@@ -972,7 +1036,7 @@ body {
     .newsletter p {
         font-size: 1rem;
     }
-// footer content
+
     .footer-content {
         padding: 0 20px 40px;
     }
