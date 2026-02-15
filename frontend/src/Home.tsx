@@ -36,6 +36,7 @@ const Home: React.FC = () => {
     const [checkOut, setCheckOut] = useState('');
     const [guests, setGuests] = useState(2);
     const [activeFilter, setActiveFilter] = useState('all');
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const destinations: Destination[] = [
         { id: 1, name: 'Paris', properties: 3874, image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&h=300&fit=crop' },
@@ -134,6 +135,36 @@ const Home: React.FC = () => {
 
     return (
         <div className="home">
+            {/* Header */}
+            <header className="header">
+                <div className="header-content">
+                    <div className="header-logo">
+                        <span className="logo-icon">🏨</span>
+                        <span className="logo-text">StayBooker</span>
+                    </div>
+
+                    <nav className={`header-nav ${isMenuOpen ? 'active' : ''}`}>
+                        <a href="#features" className="nav-link">Features</a>
+                        <a href="#how-it-works" className="nav-link">How It Works</a>
+                        <a href="#pricing" className="nav-link">Pricing</a>
+                        <a href="#about" className="nav-link">About</a>
+                    </nav>
+
+                    <div className="header-actions">
+                        <button className="btn-sign-in">Sign In</button>
+                        <button className="btn-get-started">Get Started</button>
+                    </div>
+
+                    <button
+                        className="menu-toggle"
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        aria-label="Toggle menu"
+                    >
+                        {isMenuOpen ? '✕' : '☰'}
+                    </button>
+                </div>
+            </header>
+
             {/* Hero Section */}
             <section className="hero">
                 <div className="hero-content">
