@@ -8,6 +8,7 @@ interface Destination {
     image: string;
 }
 
+
 interface Property {
     id: number;
     title: string;
@@ -139,7 +140,27 @@ const Home: React.FC = () => {
             {/* Hero Section */}
             <section className="hero">
                 <div className="hero-content">
+                    
                     <h1 className="hero-title">Găsește cazarea perfectă</h1>
+                    <div style={{ position: "absolute", top: 30, right: 40 }}>
+                        <button
+                            onClick={() => (window.location.href = "/auth")}
+                            style={{
+                                padding: "10px 18px",
+                                borderRadius: "10px",
+                                border: "1px solid rgba(255,255,255,0.4)",
+                                background: "rgba(255,255,255,0.2)",
+                                color: "white",
+                                fontWeight: 700,
+                                cursor: "pointer",
+                                backdropFilter: "blur(8px)",
+                                WebkitBackdropFilter: "blur(8px)"
+                            }}
+                        >
+                            Login / Înregistrare
+                        </button>
+                    </div>
+
                     <p className="hero-subtitle">Peste 2 milioane de proprietăți în 120 orașe și mai mult</p>
 
                     {/* Search Form */}
