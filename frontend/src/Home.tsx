@@ -123,9 +123,11 @@ const Home: React.FC = () => {
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('Search:', { searchLocation, checkIn, checkOut, guests });
-        // Aici vei adăuga logica de căutare
+
+        window.location.href =
+            `/search?location=${searchLocation}&checkIn=${checkIn}&checkOut=${checkOut}&guests=${guests}`;
     };
+
 
     const toggleFavorite = (id: number) => {
         console.log('Toggle favorite:', id);
