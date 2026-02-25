@@ -1,4 +1,5 @@
 ﻿import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import './CSS/Home.css';
@@ -9,7 +10,6 @@ interface Destination {
     properties: number;
     image: string;
 }
-
 
 interface Property {
     id: number;
@@ -34,6 +34,7 @@ interface SpecialOffer {
 }
 
 const Home: React.FC = () => {
+    const navigate = useNavigate();
     const [searchLocation, setSearchLocation] = useState('');
     const [checkIn,  setCheckIn]  = useState('');
     const [checkOut, setCheckOut] = useState('');
@@ -126,7 +127,7 @@ const Home: React.FC = () => {
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        window.location.href = `/search?location=${searchLocation}&checkIn=${checkIn}&checkOut=${checkOut}&guests=${guests}`;
+        navigate(`/search?location=${searchLocation}&checkIn=${checkIn}&checkOut=${checkOut}&guests=${guests}`);
     };
 
     const toggleFavorite = (id: number) => {
@@ -135,33 +136,12 @@ const Home: React.FC = () => {
 
     return (
         <div className="home">
-
-            {/* ── Shared Header ── */}
             <Header />
 
             {/* ── Hero ── */}
             <section className="hero">
                 <div className="hero-content">
-                    
                     <h1 className="hero-title">Găsește cazarea perfectă</h1>
-                    <div style={{ position: "absolute", top: 30, right: 40 }}>
-                        <button
-                            onClick={() => (window.location.href = "/auth")}
-                            style={{
-                                padding: "10px 18px",
-                                borderRadius: "10px",
-                                border: "1px solid rgba(255,255,255,0.4)",
-                                background: "rgba(255,255,255,0.2)",
-                                color: "white",
-                                fontWeight: 700,
-                                cursor: "pointer",
-                                backdropFilter: "blur(8px)",
-                                WebkitBackdropFilter: "blur(8px)"
-                            }}
-                        >
-                            Login / Înregistrare
-                        </button>
-                    </div>
 
                     <p className="hero-subtitle">Peste 2 milioane de proprietăți în 120 orașe și mai mult</p>
 
@@ -177,7 +157,6 @@ const Home: React.FC = () => {
                                     onChange={(e) => setSearchLocation(e.target.value)}
                                 />
                             </div>
-
                             <div className="search-field">
                                 <label htmlFor="checkin">📅</label>
                                 <input
@@ -189,7 +168,6 @@ const Home: React.FC = () => {
                                     onFocus={(e) => (e.target.type = 'date')}
                                 />
                             </div>
-
                             <div className="search-field">
                                 <label htmlFor="checkout">📅</label>
                                 <input
@@ -201,7 +179,6 @@ const Home: React.FC = () => {
                                     onFocus={(e) => (e.target.type = 'date')}
                                 />
                             </div>
-
                             <div className="search-field">
                                 <label htmlFor="guests">👤</label>
                                 <input
@@ -214,10 +191,7 @@ const Home: React.FC = () => {
                                 />
                             </div>
                         </div>
-
-                        <button type="submit" className="search-button">
-                            Caută cazări
-                        </button>
+                        <button type="submit" className="search-button">Caută cazări</button>
                     </form>
 
                     <div className="filter-buttons">
@@ -246,10 +220,14 @@ const Home: React.FC = () => {
                     <h2>Destinații populare</h2>
                     <a href="#" className="view-more">Vezi toate →</a>
                 </div>
-
                 <div className="destinations-grid">
-                    {destinations.map((dest) => (
-                        <div key={dest.id} className="destination-card">
+                    {destinations.map((dest: Destination) => (
+                        <div
+                            key={dest.id}
+                            className="destination-card"
+                            onClick={() => navigate(`/search?location=${encodeURIComponent(dest.name)}`)}
+                            style={{ cursor: 'pointer' }}
+                        >
                             <div className="destination-image">
                                 <img src={dest.image} alt={dest.name} />
                                 <div className="destination-overlay">
@@ -268,34 +246,34 @@ const Home: React.FC = () => {
                     <h2>Proprietăți recomandate</h2>
                     <a href="#" className="view-more">Vezi toate →</a>
                 </div>
-
                 <div className="properties-grid">
-                    {properties.map((property) => (
-                        <div key={property.id} className="property-card">
+                    {properties.map((property: Property) => (
+                        <div
+                            key={property.id}
+                            className="property-card"
+                            onClick={() => navigate(`/property/${property.id}`)}
+                            style={{ cursor: 'pointer' }}
+                        >
                             {property.badge && (
                                 <span className="property-badge">{property.badge}</span>
                             )}
                             <button
                                 className={`favorite-btn ${property.isFavorite ? 'active' : ''}`}
-                                onClick={() => toggleFavorite(property.id)}
+                                onClick={(e) => { e.stopPropagation(); toggleFavorite(property.id); }}
                             >
                                 {property.isFavorite ? '❤️' : '🤍'}
                             </button>
-
                             <div className="property-image">
                                 <img src={property.image} alt={property.title} />
                             </div>
-
                             <div className="property-info">
                                 <h3>{property.title}</h3>
                                 <p className="property-location">📍 {property.location}</p>
-
                                 <div className="property-features">
                                     {property.features.map((feature, index) => (
                                         <span key={index} className="feature-tag">{feature}</span>
                                     ))}
                                 </div>
-
                                 <div className="property-footer">
                                     <div className="property-rating">
                                         <span className="rating-score">⭐ {property.rating}</span>
@@ -316,7 +294,6 @@ const Home: React.FC = () => {
             <section className="special-offers">
                 <div className="container">
                     <h2>Profită de reducerile noastre exclusive</h2>
-
                     <div className="offers-grid">
                         {specialOffers.map((offer) => (
                             <div key={offer.id} className="offer-card">
@@ -339,22 +316,16 @@ const Home: React.FC = () => {
                     <div className="newsletter-icon">✉️</div>
                     <h2>Primește oferte exclusive</h2>
                     <p>Abonează-te la newsletter și fii primul care află despre cele mai bune oferte și destinații</p>
-
-                    <form
-                        className="newsletter-form"
-                        onSubmit={(e) => { e.preventDefault(); console.log('Newsletter submit'); }}
-                    >
+                    <form className="newsletter-form" onSubmit={(e) => { e.preventDefault(); }}>
                         <input type="email" placeholder="Adresa ta de email" required />
                         <button type="submit">Abonează-te</button>
                     </form>
-
                     <p className="newsletter-disclaimer">
                         Poți anula abonamentul oricând. Datele tale sunt în siguranță.
                     </p>
                 </div>
             </section>
 
-            {/* ── Shared Footer ── */}
             <Footer />
         </div>
     );
