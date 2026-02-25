@@ -11,7 +11,7 @@ const Login: React.FC = () => {
     const [email,    setEmail]    = useState('');
     const [password, setPassword] = useState('');
     const [showPass, setShowPass] = useState(false);
-    const [errors,   setErrors]   = useState<{ email?: string; password?: string }>({});
+    const [errors,   setErrors]   = useState<{ email?: string; password?: string; general?: string }>({});
     const [loading,  setLoading]  = useState(false);
     const [submitted, setSubmitted] = useState(false);
 
@@ -30,11 +30,42 @@ const Login: React.FC = () => {
         if (Object.keys(errs).length) { setErrors(errs); return; }
         setErrors({});
         setLoading(true);
-        // Simulare request
+
         setTimeout(() => {
+            // Verifică dacă există un cont înregistrat
+            const raw = localStorage.getItem('sb_user');
+            if (raw) {
+                const savedUser = JSON.parse(raw);
+                if (savedUser.email !== email || savedUser.password !== password) {
+                    setErrors({ general: 'Email sau parolă incorectă.' });
+                    setLoading(false);
+                    return;
+                }
+                // Salvează sesiunea
+                const nameParts = (savedUser.fullName || savedUser.email).split(' ');
+                const initials = nameParts.map((w: string) => w[0]).join('').toUpperCase().slice(0, 2);
+                localStorage.setItem('sb_session', JSON.stringify({
+                    email: savedUser.email,
+                    fullName: savedUser.fullName || savedUser.email,
+                    initials,
+                }));
+                window.dispatchEvent(new Event('sb_session_changed'));
+            } else {
+                // Cont demo dacă nu există cont înregistrat
+                const nameParts = email.split('@')[0].split('.');
+                const initials = nameParts.map((w: string) => w[0]).join('').toUpperCase().slice(0, 2);
+                localStorage.setItem('sb_session', JSON.stringify({
+                    email,
+                    fullName: nameParts.join(' '),
+                    initials,
+                }));
+                window.dispatchEvent(new Event('sb_session_changed'));
+            }
+
             setLoading(false);
             setSubmitted(true);
-        }, 1400);
+            setTimeout(() => navigate('/'), 900);
+        }, 1200);
     };
 
     return (
@@ -42,7 +73,7 @@ const Login: React.FC = () => {
             <Header />
 
             <div className="auth-page">
-                {/* Left panel – decorativ */}
+                {/* Left panel */}
                 <div className="auth-panel auth-panel--left">
                     <div className="auth-panel-content">
                         <div className="auth-panel-icon">🏨</div>
@@ -58,10 +89,9 @@ const Login: React.FC = () => {
                     <div className="auth-panel-bg" />
                 </div>
 
-                {/* Right panel – formular */}
+                {/* Right panel */}
                 <div className="auth-panel auth-panel--right">
                     <div className="auth-form-wrap">
-
                         {submitted ? (
                             <div className="auth-success">
                                 <div className="auth-success-icon">✅</div>
@@ -80,7 +110,12 @@ const Login: React.FC = () => {
 
                                 <form className="auth-form" onSubmit={handleSubmit} noValidate>
 
-                                    {/* Email */}
+                                    {errors.general && (
+                                        <div style={{ background: '#fee2e2', color: '#991b1b', padding: '10px 14px', borderRadius: 10, fontSize: '0.875rem', fontWeight: 600 }}>
+                                            {errors.general}
+                                        </div>
+                                    )}
+
                                     <div className={`auth-field ${errors.email ? 'auth-field--error' : ''}`}>
                                         <label htmlFor="email">Adresă de email</label>
                                         <div className="auth-input-wrap">
@@ -90,14 +125,13 @@ const Login: React.FC = () => {
                                                 type="email"
                                                 placeholder="exemplu@email.com"
                                                 value={email}
-                                                onChange={(e) => { setEmail(e.target.value); setErrors((prev) => ({ ...prev, email: undefined })); }}
+                                                onChange={(e) => { setEmail(e.target.value); setErrors((prev) => ({ ...prev, email: undefined, general: undefined })); }}
                                                 autoComplete="email"
                                             />
                                         </div>
                                         {errors.email && <span className="auth-error-msg">{errors.email}</span>}
                                     </div>
 
-                                    {/* Password */}
                                     <div className={`auth-field ${errors.password ? 'auth-field--error' : ''}`}>
                                         <label htmlFor="password">Parolă</label>
                                         <div className="auth-input-wrap">
@@ -107,15 +141,10 @@ const Login: React.FC = () => {
                                                 type={showPass ? 'text' : 'password'}
                                                 placeholder="Parola ta"
                                                 value={password}
-                                                onChange={(e) => { setPassword(e.target.value); setErrors((prev) => ({ ...prev, password: undefined })); }}
+                                                onChange={(e) => { setPassword(e.target.value); setErrors((prev) => ({ ...prev, password: undefined, general: undefined })); }}
                                                 autoComplete="current-password"
                                             />
-                                            <button
-                                                type="button"
-                                                className="auth-toggle-pass"
-                                                onClick={() => setShowPass(!showPass)}
-                                                aria-label="Arată/ascunde parola"
-                                            >
+                                            <button type="button" className="auth-toggle-pass" onClick={() => setShowPass(!showPass)}>
                                                 {showPass ? '🙈' : '👁️'}
                                             </button>
                                         </div>
@@ -132,7 +161,6 @@ const Login: React.FC = () => {
                                     <button type="submit" className="auth-btn" disabled={loading}>
                                         {loading ? <span className="auth-spinner" /> : 'Autentifică-te'}
                                     </button>
-
                                 </form>
 
                                 <p className="auth-switch">
