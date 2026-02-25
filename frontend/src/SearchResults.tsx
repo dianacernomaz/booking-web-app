@@ -363,7 +363,7 @@ const SearchResults: React.FC = () => {
                     /* Results grid */
                     <div className="sr-grid">
                         {results.map((property) => (
-                            <div key={property.id} className="sr-card">
+                            <div key={property.id} className="sr-card" onClick={() => navigate(`/property/${property.id}`)} style={{ cursor: 'pointer' }}>
 
                                 {property.badge && (
                                     <span className="sr-badge">{property.badge}</span>
@@ -371,7 +371,7 @@ const SearchResults: React.FC = () => {
 
                                 <button
                                     className={`sr-fav-btn ${favorites.has(property.id) ? "active" : ""}`}
-                                    onClick={() => toggleFavorite(property.id)}
+                                    onClick={(e) => { e.stopPropagation(); toggleFavorite(property.id); }}
                                     aria-label="Favorite"
                                 >
                                     {favorites.has(property.id) ? "❤️" : "🤍"}
@@ -407,7 +407,7 @@ const SearchResults: React.FC = () => {
                                         </div>
                                     </div>
 
-                                    <button className="sr-book-btn">Rezervă acum</button>
+                                    <button className="sr-book-btn" onClick={(e) => { e.stopPropagation(); navigate(`/property/${property.id}`); }}>Rezervă acum</button>
                                 </div>
                             </div>
                         ))}
