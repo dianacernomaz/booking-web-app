@@ -1,0 +1,457 @@
+﻿/* ─────────────────────────────────────────────────────────────────────────────
+   Auth.css  —  stiluri comune pentru /login și /register
+   Importează Home.css înainte de acest fișier (variabilele CSS sunt acolo)
+───────────────────────────────────────────────────────────────────────────── */
+
+/* ── Page layout (split: stânga decorativ, dreapta formular) ────────────── */
+.auth-page {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: calc(100vh - 80px - 340px); /* header + footer */
+}
+
+/* ── Left panel ─────────────────────────────────────────────────────────── */
+.auth-panel--left {
+    position: relative;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 48px;
+    overflow: hidden;
+}
+
+.auth-panel-bg {
+    position: absolute;
+    inset: 0;
+    background:
+            radial-gradient(circle at 15% 85%, rgba(255,255,255,0.12) 0%, transparent 45%),
+            radial-gradient(circle at 85% 15%, rgba(255,255,255,0.10) 0%, transparent 45%);
+    pointer-events: none;
+}
+
+/* Decorative floating circles */
+.auth-panel--left::before,
+.auth-panel--left::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+}
+.auth-panel--left::before {
+    width: 340px;
+    height: 340px;
+    bottom: -80px;
+    right: -80px;
+}
+.auth-panel--left::after {
+    width: 180px;
+    height: 180px;
+    top: -50px;
+    left: -50px;
+}
+
+.auth-panel-content {
+    position: relative;
+    z-index: 1;
+    color: #fff;
+    max-width: 380px;
+    animation: fadeInUp 0.7s ease both;
+}
+
+.auth-panel-icon {
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+    animation: fadeInUp 0.7s ease 0.1s both;
+}
+
+.auth-panel-content h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.25rem;
+    font-weight: 700;
+    margin-bottom: 14px;
+    line-height: 1.25;
+    animation: fadeInUp 0.7s ease 0.15s both;
+}
+
+.auth-panel-content > p {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.65;
+    margin-bottom: 32px;
+    animation: fadeInUp 0.7s ease 0.2s both;
+}
+
+.auth-perks {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    animation: fadeInUp 0.7s ease 0.25s both;
+}
+
+.auth-perks li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.9375rem;
+    color: rgba(255,255,255,0.92);
+    font-weight: 500;
+}
+
+.auth-perks li span {
+    font-size: 1.25rem;
+    width: 36px;
+    height: 36px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* ── Right panel ─────────────────────────────────────────────────────────── */
+.auth-panel--right {
+    background: var(--bg-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 40px;
+}
+
+.auth-form-wrap {
+    width: 100%;
+    max-width: 460px;
+    animation: fadeInUp 0.7s ease 0.1s both;
+}
+
+/* ── Form header ─────────────────────────────────────────────────────────── */
+.auth-header {
+    margin-bottom: 32px;
+}
+
+.auth-header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 6px;
+}
+
+.auth-header p {
+    color: var(--text-light);
+    font-size: 0.9375rem;
+}
+
+/* ── Form ────────────────────────────────────────────────────────────────── */
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* 2-column grid for some fields */
+.auth-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+/* Field wrapper */
+.auth-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.auth-field label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+/* Input row */
+.auth-input-wrap {
+    display: flex;
+    align-items: center;
+    background: var(--white);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 0 14px;
+    transition: var(--transition);
+    gap: 10px;
+}
+
+.auth-input-wrap:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.auth-field--error .auth-input-wrap {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.08);
+}
+
+.auth-input-icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.auth-input-wrap input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 0.9375rem;
+    color: var(--text-dark);
+    padding: 13px 0;
+    outline: none;
+    font-family: 'DM Sans', sans-serif;
+    min-width: 0;
+}
+
+.auth-input-wrap input::placeholder {
+    color: #9ca3af;
+}
+
+/* Toggle password visibility */
+.auth-toggle-pass {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 4px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.auth-toggle-pass:hover { transform: scale(1.2); }
+
+/* Error message */
+.auth-error-msg {
+    font-size: 0.8rem;
+    color: var(--danger);
+    font-weight: 500;
+}
+
+/* Match OK */
+.auth-match-ok {
+    font-size: 0.8rem;
+    color: var(--success);
+    font-weight: 500;
+}
+
+/* ── Password strength ───────────────────────────────────────────────────── */
+.auth-strength {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 2px;
+}
+
+.auth-strength-bars {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+}
+
+.auth-strength-bar {
+    height: 4px;
+    flex: 1;
+    border-radius: 2px;
+    transition: background 0.3s ease;
+}
+
+.auth-strength span {
+    font-size: 0.78rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* ── Remember / forgot row ───────────────────────────────────────────────── */
+.auth-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: -4px;
+}
+
+.auth-remember {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.875rem;
+    color: var(--text-light);
+    cursor: pointer;
+}
+
+.auth-remember input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+
+/* ── Checkbox field (termeni) ────────────────────────────────────────────── */
+.auth-field--checkbox {
+    margin-top: -4px;
+}
+
+.auth-checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.875rem;
+    color: var(--text-light);
+    cursor: pointer;
+    line-height: 1.5;
+}
+
+.auth-checkbox-label input {
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+    accent-color: var(--primary);
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+/* ── Links ───────────────────────────────────────────────────────────────── */
+.auth-link {
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.auth-link:hover {
+    color: var(--primary-dark);
+    text-decoration: underline;
+}
+
+/* ── Submit button ───────────────────────────────────────────────────────── */
+.auth-btn {
+    width: 100%;
+    background: var(--primary);
+    color: var(--white);
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 50px;
+    margin-top: 4px;
+}
+
+.auth-btn:hover:not(:disabled) {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+}
+
+.auth-btn:disabled {
+    opacity: 0.75;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Loading spinner */
+.auth-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255,255,255,0.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ── Switch link below form ──────────────────────────────────────────────── */
+.auth-switch {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--text-light);
+}
+
+/* ── Success state ───────────────────────────────────────────────────────── */
+.auth-success {
+    text-align: center;
+    padding: 24px 0;
+    animation: fadeInUp 0.5s ease both;
+}
+
+.auth-success-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+}
+
+.auth-success h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+}
+
+.auth-success p {
+    color: var(--text-light);
+    margin-bottom: 28px;
+    font-size: 1rem;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+    .auth-page {
+        grid-template-columns: 1fr;
+    }
+
+    .auth-panel--left {
+        padding: 48px 32px;
+        min-height: 280px;
+    }
+
+    .auth-panel-content h2 {
+        font-size: 1.75rem;
+    }
+
+    .auth-perks {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .auth-panel--left {
+        padding: 36px 24px;
+    }
+
+    .auth-panel--right {
+        padding: 36px 20px;
+    }
+
+    .auth-header h1 {
+        font-size: 1.625rem;
+    }
+
+    .auth-grid-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .auth-perks {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,5 +1,7 @@
 ﻿import React, { useState } from 'react';
-import './Home.css';
+import Header from './components/Header';
+import Footer from './components/Footer';
+import './CSS/Home.css';
 
 interface Destination {
     id: number;
@@ -33,18 +35,18 @@ interface SpecialOffer {
 
 const Home: React.FC = () => {
     const [searchLocation, setSearchLocation] = useState('');
-    const [checkIn, setCheckIn] = useState('');
+    const [checkIn,  setCheckIn]  = useState('');
     const [checkOut, setCheckOut] = useState('');
-    const [guests, setGuests] = useState(2);
+    const [guests,   setGuests]   = useState(2);
     const [activeFilter, setActiveFilter] = useState('all');
 
     const destinations: Destination[] = [
-        { id: 1, name: 'Paris', properties: 3874, image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&h=300&fit=crop' },
-        { id: 2, name: 'Tokyo', properties: 2156, image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=400&h=300&fit=crop' },
+        { id: 1, name: 'Paris',    properties: 3874, image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&h=300&fit=crop' },
+        { id: 2, name: 'Tokyo',    properties: 2156, image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=400&h=300&fit=crop' },
         { id: 3, name: 'New York', properties: 4521, image: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=400&h=300&fit=crop' },
-        { id: 4, name: 'Bali', properties: 1843, image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=400&h=300&fit=crop' },
-        { id: 5, name: 'Londra', properties: 3201, image: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&h=300&fit=crop' },
-        { id: 6, name: 'Roma', properties: 2789, image: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=400&h=300&fit=crop' },
+        { id: 4, name: 'Bali',     properties: 1843, image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=400&h=300&fit=crop' },
+        { id: 5, name: 'Londra',   properties: 3201, image: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&h=300&fit=crop' },
+        { id: 6, name: 'Roma',     properties: 2789, image: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=400&h=300&fit=crop' },
     ];
 
     const properties: Property[] = [
@@ -57,7 +59,7 @@ const Home: React.FC = () => {
             reviews: 128,
             image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=300&fit=crop',
             features: ['WiFi', 'Piscină', 'Parcare'],
-            isFavorite: false
+            isFavorite: false,
         },
         {
             id: 2,
@@ -68,7 +70,7 @@ const Home: React.FC = () => {
             reviews: 94,
             image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400&h=300&fit=crop',
             features: ['WiFi', 'Bucătărie', 'Terasă'],
-            isFavorite: true
+            isFavorite: true,
         },
         {
             id: 3,
@@ -80,7 +82,7 @@ const Home: React.FC = () => {
             image: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=400&h=300&fit=crop',
             features: ['WiFi', 'Șemineu', 'Grădină'],
             isFavorite: false,
-            badge: 'Nou'
+            badge: 'Nou',
         },
         {
             id: 4,
@@ -91,8 +93,8 @@ const Home: React.FC = () => {
             reviews: 87,
             image: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=400&h=300&fit=crop',
             features: ['WiFi', 'Piscină', 'Jacuzzi'],
-            isFavorite: true
-        }
+            isFavorite: true,
+        },
     ];
 
     const specialOffers: SpecialOffer[] = [
@@ -102,7 +104,7 @@ const Home: React.FC = () => {
             description: 'Rezerva cu cel puțin 30 de zile înainte și economisește',
             icon: '🏖️',
             color: '#10b981',
-            buttonText: 'Vezi oferta'
+            buttonText: 'Vezi oferta',
         },
         {
             id: 2,
@@ -110,7 +112,7 @@ const Home: React.FC = () => {
             description: 'Oferte exclusive pentru rezervările de ultimă oră',
             icon: '⏰',
             color: '#f59e0b',
-            buttonText: 'Vezi oferta'
+            buttonText: 'Vezi oferta',
         },
         {
             id: 3,
@@ -118,26 +120,26 @@ const Home: React.FC = () => {
             description: 'Valabil pentru minim 3 nopți de cazare în weekend',
             icon: '🎉',
             color: '#8b5cf6',
-            buttonText: 'Vezi oferta'
-        }
+            buttonText: 'Vezi oferta',
+        },
     ];
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-
-        window.location.href =
-            `/search?location=${searchLocation}&checkIn=${checkIn}&checkOut=${checkOut}&guests=${guests}`;
+        window.location.href = `/search?location=${searchLocation}&checkIn=${checkIn}&checkOut=${checkOut}&guests=${guests}`;
     };
-
 
     const toggleFavorite = (id: number) => {
         console.log('Toggle favorite:', id);
-        // Aici vei adăuga logica pentru favorite
     };
 
     return (
         <div className="home">
-            {/* Hero Section */}
+
+            {/* ── Shared Header ── */}
+            <Header />
+
+            {/* ── Hero ── */}
             <section className="hero">
                 <div className="hero-content">
                     
@@ -163,7 +165,6 @@ const Home: React.FC = () => {
 
                     <p className="hero-subtitle">Peste 2 milioane de proprietăți în 120 orașe și mai mult</p>
 
-                    {/* Search Form */}
                     <form className="search-form" onSubmit={handleSearch}>
                         <div className="search-inputs">
                             <div className="search-field">
@@ -185,7 +186,7 @@ const Home: React.FC = () => {
                                     placeholder="Check-in"
                                     value={checkIn}
                                     onChange={(e) => setCheckIn(e.target.value)}
-                                    onFocus={(e) => e.target.type = 'date'}
+                                    onFocus={(e) => (e.target.type = 'date')}
                                 />
                             </div>
 
@@ -197,7 +198,7 @@ const Home: React.FC = () => {
                                     placeholder="Check-out"
                                     value={checkOut}
                                     onChange={(e) => setCheckOut(e.target.value)}
-                                    onFocus={(e) => e.target.type = 'date'}
+                                    onFocus={(e) => (e.target.type = 'date')}
                                 />
                             </div>
 
@@ -219,43 +220,27 @@ const Home: React.FC = () => {
                         </button>
                     </form>
 
-                    {/* Filter Buttons */}
                     <div className="filter-buttons">
-                        <button
-                            className={`filter-btn ${activeFilter === 'hotels' ? 'active' : ''}`}
-                            onClick={() => setActiveFilter('hotels')}
-                        >
-                            🏨 Hoteluri
-                        </button>
-                        <button
-                            className={`filter-btn ${activeFilter === 'apartments' ? 'active' : ''}`}
-                            onClick={() => setActiveFilter('apartments')}
-                        >
-                            🏢 Apartamente
-                        </button>
-                        <button
-                            className={`filter-btn ${activeFilter === 'villas' ? 'active' : ''}`}
-                            onClick={() => setActiveFilter('villas')}
-                        >
-                            🏡 Vile
-                        </button>
-                        <button
-                            className={`filter-btn ${activeFilter === 'cabins' ? 'active' : ''}`}
-                            onClick={() => setActiveFilter('cabins')}
-                        >
-                            🏔️ Cabane
-                        </button>
-                        <button
-                            className={`filter-btn ${activeFilter === 'beach' ? 'active' : ''}`}
-                            onClick={() => setActiveFilter('beach')}
-                        >
-                            🏖️ Plajă și sol
-                        </button>
+                        {[
+                            { key: 'hotels',     label: '🏨 Hoteluri' },
+                            { key: 'apartments', label: '🏢 Apartamente' },
+                            { key: 'villas',     label: '🏡 Vile' },
+                            { key: 'cabins',     label: '🏔️ Cabane' },
+                            { key: 'beach',      label: '🏖️ Plajă și sol' },
+                        ].map((f) => (
+                            <button
+                                key={f.key}
+                                className={`filter-btn ${activeFilter === f.key ? 'active' : ''}`}
+                                onClick={() => setActiveFilter(f.key)}
+                            >
+                                {f.label}
+                            </button>
+                        ))}
                     </div>
                 </div>
             </section>
 
-            {/* Popular Destinations */}
+            {/* ── Popular Destinations ── */}
             <section className="destinations">
                 <div className="section-header">
                     <h2>Destinații populare</h2>
@@ -277,7 +262,7 @@ const Home: React.FC = () => {
                 </div>
             </section>
 
-            {/* Recommended Properties */}
+            {/* ── Recommended Properties ── */}
             <section className="properties">
                 <div className="section-header">
                     <h2>Proprietăți recomandate</h2>
@@ -327,7 +312,7 @@ const Home: React.FC = () => {
                 </div>
             </section>
 
-            {/* Special Offers */}
+            {/* ── Special Offers ── */}
             <section className="special-offers">
                 <div className="container">
                     <h2>Profită de reducerile noastre exclusive</h2>
@@ -341,28 +326,25 @@ const Home: React.FC = () => {
                                 </div>
                                 <h3>{offer.title}</h3>
                                 <p>{offer.description}</p>
-                                <button className="offer-button">
-                                    {offer.buttonText}
-                                </button>
+                                <button className="offer-button">{offer.buttonText}</button>
                             </div>
                         ))}
                     </div>
                 </div>
             </section>
 
-            {/* Newsletter Section */}
+            {/* ── Newsletter ── */}
             <section className="newsletter">
                 <div className="newsletter-content">
                     <div className="newsletter-icon">✉️</div>
                     <h2>Primește oferte exclusive</h2>
                     <p>Abonează-te la newsletter și fii primul care află despre cele mai bune oferte și destinații</p>
 
-                    <form className="newsletter-form" onSubmit={(e) => { e.preventDefault(); console.log('Newsletter submit'); }}>
-                        <input
-                            type="email"
-                            placeholder="Adresa ta de email"
-                            required
-                        />
+                    <form
+                        className="newsletter-form"
+                        onSubmit={(e) => { e.preventDefault(); console.log('Newsletter submit'); }}
+                    >
+                        <input type="email" placeholder="Adresa ta de email" required />
                         <button type="submit">Abonează-te</button>
                     </form>
 
@@ -372,72 +354,8 @@ const Home: React.FC = () => {
                 </div>
             </section>
 
-            {/* Footer */}
-            <footer className="footer">
-                <div className="footer-content">
-                    <div className="footer-section">
-                        <div className="footer-brand">
-                            <div className="footer-logo">🏨 StayBooker</div>
-                            <p>Your trusted platform for accommodation reservations worldwide.</p>
-                            <div className="social-links">
-                                <a href="#" aria-label="Facebook">📘</a>
-                                <a href="#" aria-label="Twitter">🐦</a>
-                                <a href="#" aria-label="Instagram">📷</a>
-                                <a href="#" aria-label="LinkedIn">💼</a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="footer-section">
-                        <h4>Product</h4>
-                        <ul>
-                            <li><a href="#">Features</a></li>
-                            <li><a href="#">Pricing</a></li>
-                            <li><a href="#">Security</a></li>
-                            <li><a href="#">Roadmap</a></li>
-                        </ul>
-                    </div>
-
-                    <div className="footer-section">
-                        <h4>Company</h4>
-                        <ul>
-                            <li><a href="#">About</a></li>
-                            <li><a href="#">Careers</a></li>
-                            <li><a href="#">Blog</a></li>
-                            <li><a href="#">Press</a></li>
-                        </ul>
-                    </div>
-
-                    <div className="footer-section">
-                        <h4>Resources</h4>
-                        <ul>
-                            <li><a href="#">Documentation</a></li>
-                            <li><a href="#">Help Center</a></li>
-                            <li><a href="#">API</a></li>
-                            <li><a href="#">Community</a></li>
-                        </ul>
-                    </div>
-
-                    <div className="footer-section">
-                        <h4>Legal</h4>
-                        <ul>
-                            <li><a href="#">Privacy</a></li>
-                            <li><a href="#">Terms</a></li>
-                            <li><a href="#">Cookie Policy</a></li>
-                            <li><a href="#">Licenses</a></li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div className="footer-bottom">
-                    <p>© 2026 StayBooker. All rights reserved.</p>
-                    <div className="footer-bottom-links">
-                        <a href="#">Privacy Policy</a>
-                        <a href="#">Terms of Service</a>
-                        <a href="#">Cookies</a>
-                    </div>
-                </div>
-            </footer>
+            {/* ── Shared Footer ── */}
+            <Footer />
         </div>
     );
 };
