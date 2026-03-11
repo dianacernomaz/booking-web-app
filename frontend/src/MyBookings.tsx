@@ -2,6 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import { authService } from './services/authService';
 import './CSS/Home.css';
 import './CSS/MyProfile.css';
 
@@ -151,7 +152,7 @@ const MyBookings: React.FC = () => {
                         <button className="mp-nav-item" onClick={() => navigate('/profile')}>
                             <span>🔒</span> Securitate
                         </button>
-                        <button className="mp-nav-item mp-nav-item--danger" onClick={() => { localStorage.removeItem('sb_session'); navigate('/login'); }}>
+                        <button className="mp-nav-item mp-nav-item--danger" onClick={() => { authService.logout(); navigate('/login'); }}>
                             <span>🚪</span> Deconectare
                         </button>
                     </nav>

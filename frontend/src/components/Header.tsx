@@ -1,26 +1,21 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-interface Session {
-    email: string;
-    fullName: string;
-    initials: string;
-}
+import { authService } from '../services/authService';
+import type { UserSession } from '../types/auth';
 
 const Header: React.FC = () => {
     const navigate = useNavigate();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [session, setSession] = useState<Session | null>(null);
+    const [session, setSession] = useState<UserSession | null>(null);
 
-    // Citește sesiunea din localStorage la mount și la fiecare focus pe fereastră
+    // Cite?te sesiunea din localStorage la mount ?i la fiecare focus pe fereastra
     useEffect(() => {
         const readSession = () => {
-            const raw = localStorage.getItem('sb_session');
-            setSession(raw ? JSON.parse(raw) : null);
+            setSession(authService.getSession());
         };
         readSession();
         window.addEventListener('focus', readSession);
-        // Custom event pentru update imediat după login
+        // Custom event pentru update imediat dupa login
         window.addEventListener('sb_session_changed', readSession);
         return () => {
             window.removeEventListener('focus', readSession);
@@ -29,9 +24,9 @@ const Header: React.FC = () => {
     }, []);
 
     const handleLogout = () => {
-        localStorage.removeItem('sb_session');
+        authService.logout();
         setSession(null);
-        navigate('/');
+        navigate('/login');
     };
 
     return (
@@ -58,12 +53,20 @@ const Header: React.FC = () => {
                 <div className="header-actions">
                     {session ? (
                         <>
+                            {session.role === 'admin' && (
+                                <button className="btn-sign-in" onClick={() => navigate('/admin')}>
+                                    Admin
+                                </button>
+                            )}
                             <button className="btn-sign-in" onClick={() => navigate('/bookings')}>
-                                📋 Rezervările mele
+                                Rezervarile mele
                             </button>
                             <button className="btn-profile" onClick={() => navigate('/profile')}>
                                 <div className="btn-profile-avatar">{session.initials}</div>
                                 {session.fullName.split(' ')[0]}
+                            </button>
+                            <button className="btn-sign-in" onClick={handleLogout}>
+                                Logout
                             </button>
                         </>
                     ) : (
@@ -80,7 +83,7 @@ const Header: React.FC = () => {
 
                 {/* Mobile hamburger */}
                 <button className="menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Toggle menu">
-                    {isMenuOpen ? '✕' : '☰'}
+                    {isMenuOpen ? 'X' : 'Menu'}
                 </button>
             </div>
         </header>
