@@ -60,7 +60,7 @@ const Home: React.FC = () => {
             reviews: 128,
             image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=300&fit=crop',
             features: ['WiFi', 'Piscină', 'Parcare'],
-            isFavorite: false,
+            isFavorite: false
         },
         {
             id: 2,

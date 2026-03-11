@@ -1,4 +1,5 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap');
+﻿/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap');
 
 :root {
     --primary: #2563eb;
@@ -42,139 +43,6 @@ body {
     margin: 0;
     padding: 0;
 }
-
-/* Header */
-.header {
-    width: 100%;
-    background: var(--white);
-    border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.header-content {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 40px;
-    height: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.header-logo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    transition: var(--transition);
-}
-
-.header-logo:hover {
-    opacity: 0.8;
-}
-
-.logo-icon {
-    font-size: 2rem;
-    line-height: 1;
-}
-
-.logo-text {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text-dark);
-    font-family: 'DM Sans', sans-serif;
-}
-
-.header-nav {
-    display: flex;
-    align-items: center;
-    gap: 40px;
-}
-
-.nav-link {
-    color: var(--text-dark);
-    text-decoration: none;
-    font-size: 1rem;
-    font-weight: 500;
-    transition: var(--transition);
-    position: relative;
-}
-
-.nav-link::after {
-    content: '';
-    position: absolute;
-    bottom: -4px;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background: var(--primary);
-    transition: var(--transition);
-}
-
-.nav-link:hover {
-    color: var(--primary);
-}
-
-.nav-link:hover::after {
-    width: 100%;
-}
-
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-.btn-sign-in {
-    background: transparent;
-    color: var(--text-dark);
-    border: none;
-    padding: 10px 24px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--transition);
-    font-family: 'DM Sans', sans-serif;
-    border-radius: 8px;
-}
-
-.btn-sign-in:hover {
-    background: var(--bg-light);
-}
-
-.btn-get-started {
-    background: var(--primary);
-    color: var(--white);
-    border: none;
-    padding: 12px 28px;
-    font-size: 1rem;
-    font-weight: 600;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: var(--transition);
-    font-family: 'DM Sans', sans-serif;
-}
-
-.btn-get-started:hover {
-    background: var(--primary-dark);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-}
-
-.menu-toggle {
-    display: none;
-    background: transparent;
-    border: none;
-    font-size: 1.75rem;
-    cursor: pointer;
-    color: var(--text-dark);
-    padding: 8px;
-    line-height: 1;
-}
-
 
 /* Hero Section */
 .hero {
@@ -995,14 +863,6 @@ body {
         font-size: 2rem;
     }
 
-    .header-content {
-        padding: 0 32px;
-    }
-
-    .header-nav {
-        gap: 28px;
-    }
-
     .hero-content {
         padding: 0 32px;
     }
@@ -1041,51 +901,6 @@ body {
 
     .hero-subtitle {
         font-size: 1rem;
-    }
-
-    .header-content {
-        padding: 0 24px;
-        height: 70px;
-    }
-
-    .header-nav {
-        position: fixed;
-        top: 70px;
-        left: 0;
-        right: 0;
-        background: var(--white);
-        flex-direction: column;
-        gap: 0;
-        padding: 24px;
-        box-shadow: var(--shadow-lg);
-        transform: translateY(-100%);
-        opacity: 0;
-        visibility: hidden;
-        transition: var(--transition);
-    }
-
-    .header-nav.active {
-        transform: translateY(0);
-        opacity: 1;
-        visibility: visible;
-    }
-
-    .nav-link {
-        padding: 16px 0;
-        width: 100%;
-        border-bottom: 1px solid var(--border);
-    }
-
-    .nav-link:last-child {
-        border-bottom: none;
-    }
-
-    .header-actions {
-        display: none;
-    }
-
-    .menu-toggle {
-        display: block;
     }
 
     .hero-content {
@@ -1187,19 +1002,6 @@ body {
 @media (max-width: 480px) {
     .hero-title {
         font-size: 1.875rem;
-    }
-
-    .header-content {
-        padding: 0 20px;
-        height: 64px;
-    }
-
-    .header-nav {
-        top: 64px;
-    }
-
-    .logo-text {
-        font-size: 1.25rem;
     }
 
     .hero-content {
