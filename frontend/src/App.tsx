@@ -7,6 +7,9 @@ import Register from "./Register";
 import PropertyDetail from "./Propertydetail";
 import MyProfile from "./MyProfile";
 import MyBookings from "./MyBookings";
+import MyProperties from "./MyProperties";
+import Features from "./Features";
+import About from "./About";
 import "./CSS/App.css";
 
 function App() {
@@ -21,9 +24,11 @@ function App() {
                 <Route path="/property/:id" element={<PropertyDetail />} />
                 <Route path="/profile"      element={<MyProfile />} />
                 <Route path="/bookings"     element={<MyBookings />} />
+                <Route path="/my-properties" element={<MyProperties />} />
+                <Route path="/features"     element={<Features />} />
+                <Route path="/about"        element={<About />} />
             </Routes>
         </>
     );
 }
-
 export default App;
