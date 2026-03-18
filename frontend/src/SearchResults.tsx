@@ -1,9 +1,11 @@
-import React, { useState, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from './components/Header';
 import Footer from "./components/Footer";
 import "./CSS/Home.css";
 import "./CSS/SearchResults.css";
+import { useCurrency } from "./lib/currency";
+import { getManagedPropertySummaries } from "./lib/managedProperties";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -158,6 +160,8 @@ const SORT_OPTIONS = [
 const SearchResults: React.FC = () => {
     const navigate = useNavigate();
     const initialParams = useMemo(() => readParamsFromUrl(), []);
+    const [propertiesVersion, setPropertiesVersion] = useState(0);
+    const { formatPrice } = useCurrency();
 
     const [location, setLocation] = useState(initialParams.location);
     const [checkIn,  setCheckIn]  = useState(initialParams.checkIn);
@@ -166,9 +170,16 @@ const SearchResults: React.FC = () => {
 
     const [activeParams, setActiveParams] = useState(initialParams);
     const [sortBy,       setSortBy]       = useState("recommended");
+    const allProperties = [...PROPERTIES, ...getManagedPropertySummaries()];
     const [favorites,    setFavorites]    = useState<Set<number>>(
-        () => new Set(PROPERTIES.filter((p) => p.isFavorite).map((p) => p.id))
+        () => new Set(allProperties.filter((p) => p.isFavorite).map((p) => p.id))
     );
+
+    useEffect(() => {
+        const syncProperties = () => setPropertiesVersion((prev) => prev + 1);
+        window.addEventListener('sb_properties_changed', syncProperties);
+        return () => window.removeEventListener('sb_properties_changed', syncProperties);
+    }, []);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -209,7 +220,7 @@ const SearchResults: React.FC = () => {
     const results = useMemo(() => {
         if (errors.length) return [];
         const loc = normalize(activeParams.location);
-        let filtered = PROPERTIES.filter((p) => {
+        let filtered = allProperties.filter((p) => {
             const matchesLocation =
                 !loc ||
                 normalize(p.city).includes(loc) ||
@@ -227,7 +238,7 @@ const SearchResults: React.FC = () => {
         if (sortBy === "price-desc") filtered = [...filtered].sort((a, b) => b.price - a.price);
         if (sortBy === "rating")     filtered = [...filtered].sort((a, b) => b.rating - a.rating);
         return filtered;
-    }, [activeParams, sortBy]);
+    }, [activeParams, propertiesVersion, sortBy]);
 
     return (
         <div className="home">
@@ -401,11 +412,11 @@ const SearchResults: React.FC = () => {
                                             <span className="sr-rating-score">⭐ {property.rating}</span>
                                             <span className="sr-rating-count">({property.reviews} recenzii)</span>
                                         </div>
-                                        <div className="sr-price">
-                                            <span className="sr-price-amount">{property.price} RON</span>
-                                            <span className="sr-price-period">/ noapte</span>
-                                        </div>
+                                    <div className="sr-price">
+                                        <span className="sr-price-amount">{formatPrice(property.price)}</span>
+                                        <span className="sr-price-period">/ noapte</span>
                                     </div>
+                                </div>
 
                                     <button className="sr-book-btn" onClick={(e) => { e.stopPropagation(); navigate(`/property/${property.id}`); }}>Rezervă acum</button>
                                 </div>

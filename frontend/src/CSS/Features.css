@@ -1,0 +1,314 @@
+﻿/* ═══════════════════════════════════════════════════════════
+   Features.css  —  Pagina /features
+   Requires Home.css imported first (CSS variables)
+═══════════════════════════════════════════════════════════ */
+
+/* ── Hero ── */
+.feat-hero {
+    position: relative;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 100px 0 80px;
+    overflow: hidden;
+    text-align: center;
+}
+
+.feat-hero-inner {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 32px;
+    position: relative;
+    z-index: 2;
+    animation: fadeInUp 0.7s ease both;
+}
+
+.feat-hero-tag {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 6px 18px;
+    border-radius: 20px;
+    margin-bottom: 24px;
+}
+
+.feat-hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 3.25rem;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1.2;
+    margin-bottom: 20px;
+}
+
+.feat-hero p {
+    font-size: 1.125rem;
+    color: rgba(255,255,255,0.88);
+    line-height: 1.75;
+    margin-bottom: 36px;
+    max-width: 580px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.feat-cta {
+    display: inline-block;
+    padding: 14px 36px;
+    background: #fff;
+    color: #2563eb;
+    font-weight: 700;
+    font-size: 1rem;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+.feat-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.2);
+}
+
+/* Decorative orbs */
+.feat-hero-decoration { position: absolute; inset: 0; pointer-events: none; }
+
+.feat-orb {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.07);
+}
+.feat-orb--1 { width: 400px; height: 400px; bottom: -120px; right: -80px; }
+.feat-orb--2 { width: 200px; height: 200px; top: -60px; left: -40px; }
+.feat-orb--3 { width: 120px; height: 120px; top: 40px; right: 200px; background: rgba(255,255,255,0.1); }
+
+/* ── Stats ── */
+.feat-stats {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 0;
+}
+
+.feat-stats-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.feat-stat-item {
+    padding: 36px 24px;
+    text-align: center;
+    border-right: 1px solid var(--border);
+    transition: background 0.2s ease;
+}
+
+.feat-stat-item:last-child { border-right: none; }
+.feat-stat-item:hover { background: #f9fafb; }
+
+.feat-stat-value {
+    display: block;
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    line-height: 1;
+    margin-bottom: 6px;
+}
+
+.feat-stat-label {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    font-weight: 500;
+}
+
+/* ── Grid section ── */
+.feat-grid-section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 80px 32px;
+}
+
+.feat-grid-header {
+    text-align: center;
+    margin-bottom: 56px;
+}
+
+.feat-grid-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 14px;
+}
+
+.feat-grid-header p {
+    font-size: 1.0625rem;
+    color: var(--text-light);
+    max-width: 560px;
+    margin: 0 auto;
+    line-height: 1.7;
+}
+
+.feat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+}
+
+/* ── Feature card ── */
+.feat-card {
+    position: relative;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 36px 28px;
+    transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+    animation: fadeInUp 0.6s ease both;
+}
+
+.feat-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 48px rgba(0,0,0,0.1);
+    border-color: var(--primary);
+}
+
+.feat-card-badge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: var(--primary);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+.feat-card-icon {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    line-height: 1;
+    display: block;
+}
+
+.feat-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 12px;
+}
+
+.feat-card p {
+    font-size: 0.9375rem;
+    color: var(--text-light);
+    line-height: 1.7;
+}
+
+/* ── CTA Banner ── */
+.feat-banner {
+    background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+    padding: 80px 0;
+}
+
+.feat-banner-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+}
+
+.feat-banner-text h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 10px;
+}
+
+.feat-banner-text p {
+    color: rgba(255,255,255,0.85);
+    font-size: 1rem;
+    line-height: 1.65;
+    max-width: 480px;
+}
+
+.feat-banner-actions {
+    display: flex;
+    gap: 14px;
+    flex-shrink: 0;
+}
+
+.feat-banner-btn {
+    padding: 13px 28px;
+    border-radius: 10px;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.25s ease;
+    border: 2px solid transparent;
+    white-space: nowrap;
+}
+
+.feat-banner-btn--primary {
+    background: #fff;
+    color: var(--primary);
+    border-color: #fff;
+}
+
+.feat-banner-btn--primary:hover {
+    background: transparent;
+    color: #fff;
+}
+
+.feat-banner-btn--secondary {
+    background: transparent;
+    color: #fff;
+    border-color: rgba(255,255,255,0.5);
+}
+
+.feat-banner-btn--secondary:hover {
+    border-color: #fff;
+    background: rgba(255,255,255,0.1);
+}
+
+/* ── Animations ── */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+    .feat-grid { grid-template-columns: repeat(2, 1fr); }
+    .feat-stats-inner { grid-template-columns: repeat(2, 1fr); }
+    .feat-stat-item:nth-child(2) { border-right: none; }
+    .feat-banner-inner { flex-direction: column; text-align: center; }
+    .feat-banner-text p { max-width: 100%; margin: 0 auto; }
+}
+
+@media (max-width: 768px) {
+    .feat-hero h1 { font-size: 2.25rem; }
+    .feat-grid { grid-template-columns: 1fr; }
+    .feat-banner-actions { flex-direction: column; width: 100%; }
+    .feat-banner-btn { width: 100%; text-align: center; }
+    .feat-grid-section { padding: 48px 20px; }
+}
+
+@media (max-width: 480px) {
+    .feat-stats-inner { grid-template-columns: repeat(2, 1fr); }
+    .feat-stat-item { padding: 24px 16px; border-right: 1px solid var(--border); }
+    .feat-stat-item:nth-child(even) { border-right: none; }
+    .feat-stat-item:nth-child(3), .feat-stat-item:nth-child(4) { border-top: 1px solid var(--border); }
+}

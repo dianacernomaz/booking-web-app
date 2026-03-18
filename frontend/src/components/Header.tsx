@@ -1,5 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useCurrency } from '../lib/currency';
 
 interface Session {
     email: string;
@@ -11,6 +12,7 @@ const Header: React.FC = () => {
     const navigate = useNavigate();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [session, setSession] = useState<Session | null>(null);
+    const { currency, currencies, setCurrency } = useCurrency();
 
     // Citește sesiunea din localStorage la mount și la fiecare focus pe fereastră
     useEffect(() => {
@@ -28,10 +30,9 @@ const Header: React.FC = () => {
         };
     }, []);
 
-    const handleLogout = () => {
-        localStorage.removeItem('sb_session');
-        setSession(null);
-        navigate('/');
+    const handleRouteChange = (path: string) => {
+        setIsMenuOpen(false);
+        navigate(path);
     };
 
     return (
@@ -48,34 +49,48 @@ const Header: React.FC = () => {
 
                 {/* Nav */}
                 <nav className={`header-nav ${isMenuOpen ? 'active' : ''}`}>
-                    <a href="/#features"     className="nav-link">Features</a>
-                    <a href="/#how-it-works" className="nav-link">How It Works</a>
-                    <a href="/#pricing"      className="nav-link">Pricing</a>
-                    <a href="/#about"        className="nav-link">About</a>
+                    <button type="button" className="nav-link" onClick={() => handleRouteChange('/features')}>Features</button>
+                    <button type="button" className="nav-link" onClick={() => handleRouteChange('/about')}>About</button>
                 </nav>
 
-                {/* Auth / Profile */}
-                <div className="header-actions">
-                    {session ? (
-                        <>
-                            <button className="btn-sign-in" onClick={() => navigate('/bookings')}>
-                                📋 Rezervările mele
-                            </button>
-                            <button className="btn-profile" onClick={() => navigate('/profile')}>
-                                <div className="btn-profile-avatar">{session.initials}</div>
-                                {session.fullName.split(' ')[0]}
-                            </button>
-                        </>
-                    ) : (
-                        <>
-                            <button className="btn-sign-in" onClick={() => navigate('/login')}>
-                                Sign In
-                            </button>
-                            <button className="btn-get-started" onClick={() => navigate('/register')}>
-                                Get Started
-                            </button>
-                        </>
-                    )}
+                <div className="header-tools">
+                    <label className="header-currency" aria-label="Schimbă valuta">
+                        <span>Valută</span>
+                        <select value={currency} onChange={(e) => setCurrency(e.target.value as typeof currency)}>
+                            {currencies.map((item) => (
+                                <option key={item.code} value={item.code}>
+                                    {item.label}
+                                </option>
+                            ))}
+                        </select>
+                    </label>
+
+                    {/* Auth / Profile */}
+                    <div className="header-actions">
+                        {session ? (
+                            <>
+                                <button className="btn-sign-in" onClick={() => navigate('/my-properties')}>
+                                    🏠 Cazările mele
+                                </button>
+                                <button className="btn-sign-in" onClick={() => navigate('/bookings')}>
+                                    📋 Rezervările mele
+                                </button>
+                                <button className="btn-profile" onClick={() => navigate('/profile')}>
+                                    <div className="btn-profile-avatar">{session.initials}</div>
+                                    {session.fullName.split(' ')[0]}
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <button className="btn-sign-in" onClick={() => navigate('/login')}>
+                                    Sign In
+                                </button>
+                                <button className="btn-get-started" onClick={() => navigate('/register')}>
+                                    Get Started
+                                </button>
+                            </>
+                        )}
+                    </div>
                 </div>
 
                 {/* Mobile hamburger */}
