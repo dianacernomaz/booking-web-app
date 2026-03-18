@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import './CSS/Home.css';
+import { useCurrency } from './lib/currency';
 
 interface Destination {
     id: number;
@@ -35,6 +36,7 @@ interface SpecialOffer {
 
 const Home: React.FC = () => {
     const navigate = useNavigate();
+    const { formatPrice } = useCurrency();
     const [searchLocation, setSearchLocation] = useState('');
     const [checkIn,  setCheckIn]  = useState('');
     const [checkOut, setCheckOut] = useState('');
@@ -60,7 +62,7 @@ const Home: React.FC = () => {
             reviews: 128,
             image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=300&fit=crop',
             features: ['WiFi', 'Piscină', 'Parcare'],
-            isFavorite: false,
+            isFavorite: false
         },
         {
             id: 2,
@@ -280,7 +282,7 @@ const Home: React.FC = () => {
                                         <span className="rating-reviews">({property.reviews} recenzii)</span>
                                     </div>
                                     <div className="property-price">
-                                        <span className="price-amount">{property.price} RON</span>
+                                        <span className="price-amount">{formatPrice(property.price)}</span>
                                         <span className="price-period">/ noapte</span>
                                     </div>
                                 </div>

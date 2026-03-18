@@ -5,6 +5,8 @@ import Footer from './components/Footer';
 import { authService } from './services/authService';
 import './CSS/Home.css';
 import './CSS/MyProfile.css';
+import { deleteManagedPropertiesForOwner, reassignManagedPropertiesOwner } from './lib/managedProperties';
+import { deleteBookingsForOwner, reassignBookingsOwner } from './lib/bookings';
 
 type Tab = 'overview' | 'settings' | 'security';
 
@@ -88,6 +90,8 @@ const MyProfile: React.FC = () => {
 
     const handleSave = (e: React.FormEvent) => {
         e.preventDefault();
+        // Salvează datele actualizate în localStorage
+        const previousEmail = loadUser()?.email || form.email;
         const newFullName = `${form.firstName} ${form.lastName}`.trim();
         const result = authService.updateCurrentUserProfile({
             fullName: newFullName,
@@ -96,9 +100,22 @@ const MyProfile: React.FC = () => {
             city:     form.city,
             country:  form.country,
             bio:      form.bio,
-        });
-        if (!result.ok || !result.data) return;
-        setUserData(result.data);
+        };
+        localStorage.setItem('sb_user', JSON.stringify(updatedUser));
+        reassignManagedPropertiesOwner(previousEmail, form.email, newFullName);
+        reassignBookingsOwner(previousEmail, form.email);
+        // Actualizează și sesiunea
+        const session = localStorage.getItem('sb_session');
+        if (session) {
+            const s = JSON.parse(session);
+            localStorage.setItem('sb_session', JSON.stringify({
+                ...s,
+                fullName: newFullName,
+                initials: getInitials(newFullName),
+            }));
+        }
+        window.dispatchEvent(new Event('sb_session_changed'));
+        setUserData(updatedUser);
         setSaved(true);
         setTimeout(() => setSaved(false), 3000);
     };
@@ -173,6 +190,9 @@ const MyProfile: React.FC = () => {
                         <button className={`mp-nav-item ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')}>
                             <span>👤</span> Profilul meu
                         </button>
+                        <button className="mp-nav-item" onClick={() => navigate('/my-properties')}>
+                            <span>🏠</span> Cazări mele
+                        </button>
                         <button className="mp-nav-item" onClick={() => navigate('/bookings')}>
                             <span>📋</span> Rezervările mele
                         </button>
@@ -231,6 +251,14 @@ const MyProfile: React.FC = () => {
                                         <div>
                                             <h4>Rezervările mele</h4>
                                             <p>Vezi istoricul rezervărilor</p>
+                                        </div>
+                                        <span className="mp-action-arrow">→</span>
+                                    </div>
+                                    <div className="mp-action-card" onClick={() => navigate('/my-properties')}>
+                                        <div className="mp-action-icon" style={{ background: '#fee2e2' }}>🏠</div>
+                                        <div>
+                                            <h4>Cazări publicate</h4>
+                                            <p>Administrează proprietățile tale</p>
                                         </div>
                                         <span className="mp-action-arrow">→</span>
                                     </div>
@@ -393,7 +421,13 @@ const MyProfile: React.FC = () => {
                                     <h3>Zonă periculoasă</h3>
                                     <p>Odată șters, contul nu poate fi recuperat.</p>
                                     <button type="button" className="mp-delete-btn" onClick={() => {
-                                        authService.deleteCurrentUser();
+                                        if (form.email) {
+                                            deleteManagedPropertiesForOwner(form.email);
+                                            deleteBookingsForOwner(form.email);
+                                        }
+                                        localStorage.removeItem('sb_user');
+                                        localStorage.removeItem('sb_session');
+                                        window.dispatchEvent(new Event('sb_session_changed'));
                                         navigate('/register');
                                     }}>
                                         🗑️ Șterge contul

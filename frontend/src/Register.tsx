@@ -5,6 +5,7 @@ import Footer from './components/Footer';
 import { authService } from './services/authService';
 import './CSS/Home.css';
 import './CSS/Auth.css';
+import { useCurrency } from './lib/currency';
 
 interface FormData {
     fullName:  string;
@@ -20,6 +21,7 @@ type FormErrors = Partial<Record<keyof FormData, string>>;
 
 const Register: React.FC = () => {
     const navigate = useNavigate();
+    const { formatPrice } = useCurrency();
 
     const [form, setForm] = useState<FormData>({
         fullName:  '',
@@ -115,7 +117,7 @@ const Register: React.FC = () => {
                             <li><span>🌍</span> Acces la 2M+ proprietăți</li>
                             <li><span>💸</span> Prețuri exclusive pentru membri</li>
                             <li><span>⭐</span> Recenzii verificate</li>
-                            <li><span>🎁</span> Bonus 50 RON la prima rezervare</li>
+                            <li><span>🎁</span> Bonus {formatPrice(50)} la prima rezervare</li>
                         </ul>
                     </div>
                     <div className="auth-panel-bg" />

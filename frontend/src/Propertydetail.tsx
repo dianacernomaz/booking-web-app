@@ -4,6 +4,10 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import './CSS/Home.css';
 import './CSS/PropertyDetail.css';
+import { useCurrency } from './lib/currency';
+import { getManagedPropertyById, toManagedPropertyDetail } from './lib/managedProperties';
+import { saveBooking, type PaymentMethod } from './lib/bookings';
+import { getSession } from './lib/session';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -390,14 +394,49 @@ function calcNights(ci: string, co: string) {
     return Math.round((new Date(co).getTime() - new Date(ci).getTime()) / (1000 * 60 * 60 * 24));
 }
 
+function onlyDigits(value: string) {
+    return value.replace(/\D/g, '');
+}
+
+function formatCardNumber(value: string) {
+    return onlyDigits(value).slice(0, 16).replace(/(\d{4})(?=\d)/g, '$1 ').trim();
+}
+
+function formatExpiry(value: string) {
+    const digits = onlyDigits(value).slice(0, 4);
+    if (digits.length <= 2) return digits;
+    return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+}
+
+function isValidExpiry(value: string) {
+    if (!/^\d{2}\/\d{2}$/.test(value)) return false;
+
+    const [monthText, yearText] = value.split('/');
+    const month = Number(monthText);
+    const year = Number(`20${yearText}`);
+    if (month < 1 || month > 12) return false;
+
+    const now = new Date();
+    const expiryDate = new Date(year, month, 0);
+    return expiryDate >= new Date(now.getFullYear(), now.getMonth(), 1);
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const PropertyDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    const { formatPrice } = useCurrency();
 
     const property = useMemo(
-        () => PROPERTIES_DB.find(p => p.id === Number(id)),
+        () => {
+            const propertyId = Number(id);
+            const defaultProperty = PROPERTIES_DB.find((item) => item.id === propertyId);
+            if (defaultProperty) return defaultProperty;
+
+            const managedProperty = getManagedPropertyById(propertyId);
+            return managedProperty ? toManagedPropertyDetail(managedProperty) : undefined;
+        },
         [id]
     );
 
@@ -430,6 +469,16 @@ const PropertyDetail: React.FC = () => {
     const [modalOpen,    setModalOpen]    = useState(false);
     const [bookingDone,  setBookingDone]  = useState(false);
     const [bookingCode,  setBookingCode]  = useState('');
+    const [bookingPaymentStatus, setBookingPaymentStatus] = useState<'paid' | 'pending'>('paid');
+    const [bookingPaymentLabel, setBookingPaymentLabel] = useState('');
+    const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
+    const [paymentForm, setPaymentForm] = useState({
+        cardName: '',
+        cardNumber: '',
+        expiry: '',
+        cvv: '',
+    });
+    const [paymentError, setPaymentError] = useState('');
 
     // Favorites
     const [isFav, setIsFav] = useState(false);
@@ -497,17 +546,109 @@ const PropertyDetail: React.FC = () => {
     const prevMonth = () => { if (calMonth === 0) { setCalMonth(11); setCalYear(y => y - 1); } else setCalMonth(m => m - 1); };
     const nextMonth = () => { if (calMonth === 11) { setCalMonth(0); setCalYear(y => y + 1); } else setCalMonth(m => m + 1); };
 
+    const paymentLabelMap: Record<PaymentMethod, string> = {
+        card: 'Card bancar',
+        bank_transfer: 'Transfer bancar',
+        pay_on_arrival: 'Plată la proprietate',
+    };
+
+    const paymentStatusMap: Record<PaymentMethod, 'paid' | 'pending'> = {
+        card: 'paid',
+        bank_transfer: 'pending',
+        pay_on_arrival: 'pending',
+    };
+
+    const paymentCtaText =
+        paymentMethod === 'card'
+            ? `✅ Plătește acum ${formatPrice(total)}`
+            : paymentMethod === 'bank_transfer'
+                ? '✅ Confirmă și primește detaliile bancare'
+                : '✅ Confirmă cu plată la sosire';
+
+    const paymentSummaryText =
+        paymentMethod === 'card'
+            ? 'Plata este procesată imediat, securizat.'
+            : paymentMethod === 'bank_transfer'
+                ? 'Rezervarea rămâne în așteptare până la confirmarea transferului.'
+                : 'Achiziți la check-in, direct la proprietate.';
+
+    const validatePayment = () => {
+        if (paymentMethod !== 'card') return '';
+
+        if (!paymentForm.cardName.trim()) {
+            return 'Introdu numele titularului cardului.';
+        }
+
+        if (onlyDigits(paymentForm.cardNumber).length !== 16) {
+            return 'Numărul cardului trebuie să aibă 16 cifre.';
+        }
+
+        if (!isValidExpiry(paymentForm.expiry)) {
+            return 'Data de expirare nu este validă.';
+        }
+
+        if (onlyDigits(paymentForm.cvv).length < 3) {
+            return 'CVV-ul trebuie să aibă 3 sau 4 cifre.';
+        }
+
+        return '';
+    };
+
     // ── Booking
     const handleBook = () => {
         if (nights <= 0) return;
+        if (!getSession()?.email) {
+            navigate('/login');
+            return;
+        }
+        setPaymentError('');
         setBookingDone(false);
         setBookingCode('');
         setModalOpen(true);
     };
 
     const confirmBooking = () => {
+        const session = getSession();
+        if (!session?.email) {
+            setModalOpen(false);
+            navigate('/login');
+            return;
+        }
+
+        const validationError = validatePayment();
+        if (validationError) {
+            setPaymentError(validationError);
+            return;
+        }
+
         const code = 'SB-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+        const normalizedCard = onlyDigits(paymentForm.cardNumber);
+        const paymentStatus = paymentStatusMap[paymentMethod];
+        const paymentLabel = paymentLabelMap[paymentMethod];
+
+        saveBooking({
+            ownerEmail: session.email,
+            propertyId: property.id,
+            propertyTitle: property.title,
+            propertyLocation: property.location,
+            propertyImage: property.images[0],
+            checkIn,
+            checkOut,
+            guests,
+            nights,
+            total,
+            code,
+            paymentMethod,
+            paymentStatus,
+            paymentLabel,
+            paymentLast4: paymentMethod === 'card' ? normalizedCard.slice(-4) : undefined,
+            paidAt: paymentStatus === 'paid' ? new Date().toISOString() : undefined,
+        });
+
+        setPaymentError('');
         setBookingCode(code);
+        setBookingPaymentStatus(paymentStatus);
+        setBookingPaymentLabel(paymentLabel);
         setBookingDone(true);
     };
 
@@ -724,9 +865,9 @@ const PropertyDetail: React.FC = () => {
                     <div className="pd-sidebar">
                         {/* Price */}
                         <div className="pd-sb-price-row">
-                            <span className="pd-sb-price">{property.price} RON</span>
+                            <span className="pd-sb-price">{formatPrice(property.price)}</span>
                             <span className="pd-sb-per">/ noapte</span>
-                            <span className="pd-sb-orig">{property.priceOriginal} RON</span>
+                            <span className="pd-sb-orig">{formatPrice(property.priceOriginal)}</span>
                             <span className="pd-sb-discount">-{discount}%</span>
                         </div>
                         <div className="pd-sb-rating">
@@ -764,15 +905,15 @@ const PropertyDetail: React.FC = () => {
                         {/* Price breakdown */}
                         {nights > 0 && (
                             <div className="pd-sb-breakdown">
-                                <div className="pd-sb-row"><span>{property.price} RON × {nights} nopți</span><span>{(property.price * nights).toLocaleString()} RON</span></div>
-                                <div className="pd-sb-row"><span>Taxă curățenie</span><span>{cleaning} RON</span></div>
-                                <div className="pd-sb-row"><span>Taxă serviciu (10%)</span><span>{fee} RON</span></div>
-                                <div className="pd-sb-total"><span>Total</span><span>{total.toLocaleString()} RON</span></div>
+                                <div className="pd-sb-row"><span>{formatPrice(property.price)} × {nights} nopți</span><span>{formatPrice(property.price * nights)}</span></div>
+                                <div className="pd-sb-row"><span>Taxă curățenie</span><span>{formatPrice(cleaning)}</span></div>
+                                <div className="pd-sb-row"><span>Taxă serviciu (10%)</span><span>{formatPrice(fee)}</span></div>
+                                <div className="pd-sb-total"><span>Total</span><span>{formatPrice(total)}</span></div>
                             </div>
                         )}
 
                         <button className="pd-sb-book-btn" onClick={handleBook} disabled={nights <= 0}>
-                            🏨 {nights > 0 ? `Rezervă · ${total.toLocaleString()} RON` : 'Selectează datele'}
+                            🏨 {nights > 0 ? `Rezervă · ${formatPrice(total)}` : 'Selectează datele'}
                         </button>
                         <p className="pd-sb-note">Nu vei fi taxat încă · Rezervare gratuită</p>
 
@@ -829,20 +970,129 @@ const PropertyDetail: React.FC = () => {
                                     <div className="pd-modal-row"><span>Check-out</span><span>{formatDate(checkOut)}</span></div>
                                     <div className="pd-modal-row"><span>Nopți</span><span>{nights}</span></div>
                                     <div className="pd-modal-row"><span>Oaspeți</span><span>{guests} persoane</span></div>
-                                    <div className="pd-modal-row"><span>{property.price} RON × {nights} nopți</span><span>{(property.price * nights).toLocaleString()} RON</span></div>
-                                    <div className="pd-modal-row"><span>Taxă curățenie</span><span>{cleaning} RON</span></div>
-                                    <div className="pd-modal-row"><span>Taxă serviciu</span><span>{fee} RON</span></div>
+                                    <div className="pd-modal-row"><span>{formatPrice(property.price)} × {nights} nopți</span><span>{formatPrice(property.price * nights)}</span></div>
+                                    <div className="pd-modal-row"><span>Taxă curățenie</span><span>{formatPrice(cleaning)}</span></div>
+                                    <div className="pd-modal-row"><span>Taxă serviciu</span><span>{formatPrice(fee)}</span></div>
                                 </div>
-                                <div className="pd-modal-total"><span>Total de plată</span><span>{total.toLocaleString()} RON</span></div>
+                                <div className="pd-payment-box">
+                                    <div className="pd-payment-head">
+                                        <h3>Metodă de plată</h3>
+                                        <span>{paymentSummaryText}</span>
+                                    </div>
+
+                                    <div className="pd-payment-methods">
+                                        <button
+                                            type="button"
+                                            className={`pd-payment-method ${paymentMethod === 'card' ? 'active' : ''}`}
+                                            onClick={() => { setPaymentMethod('card'); setPaymentError(''); }}
+                                        >
+                                            <strong>💳 Card</strong>
+                                            <span>Visa / Mastercard</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={`pd-payment-method ${paymentMethod === 'bank_transfer' ? 'active' : ''}`}
+                                            onClick={() => { setPaymentMethod('bank_transfer'); setPaymentError(''); }}
+                                        >
+                                            <strong>🏦 Transfer</strong>
+                                            <span>Confirmare ulterioară</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={`pd-payment-method ${paymentMethod === 'pay_on_arrival' ? 'active' : ''}`}
+                                            onClick={() => { setPaymentMethod('pay_on_arrival'); setPaymentError(''); }}
+                                        >
+                                            <strong>🏨 La sosire</strong>
+                                            <span>Plătești la check-in</span>
+                                        </button>
+                                    </div>
+
+                                    {paymentMethod === 'card' && (
+                                        <div className="pd-payment-fields">
+                                            <div className="pd-payment-field pd-payment-field--full">
+                                                <label>Titular card</label>
+                                                <input
+                                                    type="text"
+                                                    value={paymentForm.cardName}
+                                                    onChange={(e) => {
+                                                        setPaymentForm((prev) => ({ ...prev, cardName: e.target.value }));
+                                                        setPaymentError('');
+                                                    }}
+                                                    placeholder="Prenume Nume"
+                                                />
+                                            </div>
+                                            <div className="pd-payment-field pd-payment-field--full">
+                                                <label>Număr card</label>
+                                                <input
+                                                    type="text"
+                                                    inputMode="numeric"
+                                                    value={paymentForm.cardNumber}
+                                                    onChange={(e) => {
+                                                        setPaymentForm((prev) => ({ ...prev, cardNumber: formatCardNumber(e.target.value) }));
+                                                        setPaymentError('');
+                                                    }}
+                                                    placeholder="4242 4242 4242 4242"
+                                                />
+                                            </div>
+                                            <div className="pd-payment-field">
+                                                <label>Expiră</label>
+                                                <input
+                                                    type="text"
+                                                    inputMode="numeric"
+                                                    value={paymentForm.expiry}
+                                                    onChange={(e) => {
+                                                        setPaymentForm((prev) => ({ ...prev, expiry: formatExpiry(e.target.value) }));
+                                                        setPaymentError('');
+                                                    }}
+                                                    placeholder="MM/YY"
+                                                />
+                                            </div>
+                                            <div className="pd-payment-field">
+                                                <label>CVV</label>
+                                                <input
+                                                    type="password"
+                                                    inputMode="numeric"
+                                                    value={paymentForm.cvv}
+                                                    onChange={(e) => {
+                                                        setPaymentForm((prev) => ({ ...prev, cvv: onlyDigits(e.target.value).slice(0, 4) }));
+                                                        setPaymentError('');
+                                                    }}
+                                                    placeholder="123"
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {paymentMethod === 'bank_transfer' && (
+                                        <div className="pd-payment-note">
+                                            <strong>IBAN demo:</strong> MD12STBK0000000001234567
+                                            <br />
+                                            <strong>Beneficiar:</strong> StayBooker SRL
+                                        </div>
+                                    )}
+
+                                    {paymentMethod === 'pay_on_arrival' && (
+                                        <div className="pd-payment-note">
+                                            Rezervarea se confirmă acum, iar plata se face direct la recepție sau la gazdă în ziua check-in-ului.
+                                        </div>
+                                    )}
+
+                                    {paymentError && <div className="pd-payment-error">{paymentError}</div>}
+                                </div>
+                                <div className="pd-modal-total"><span>Total de plată</span><span>{formatPrice(total)}</span></div>
                                 <button className="pd-modal-confirm-btn" onClick={confirmBooking}>
-                                    ✅ Confirmă și plătește {total.toLocaleString()} RON
+                                    {paymentCtaText}
                                 </button>
                             </>
                         ) : (
                             <div className="pd-modal-success">
                                 <div>🎉</div>
                                 <h3>Rezervare confirmată!</h3>
-                                <p>Felicitări! Vei primi o confirmare pe email în câteva minute.</p>
+                                <p>
+                                    {bookingPaymentStatus === 'paid'
+                                        ? `Plata prin ${bookingPaymentLabel.toLowerCase()} a fost înregistrată cu succes.`
+                                        : `Rezervarea a fost creată cu metoda ${bookingPaymentLabel.toLowerCase()} și așteaptă confirmarea finală.`}
+                                </p>
                                 <div className="pd-modal-code">{bookingCode}</div>
                                 <p className="pd-modal-code-label">Cod de confirmare · Salvează-l pentru referință</p>
                             </div>

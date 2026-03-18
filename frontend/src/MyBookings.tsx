@@ -1,102 +1,13 @@
-﻿import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import { authService } from './services/authService';
 import './CSS/Home.css';
 import './CSS/MyProfile.css';
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-type BookingStatus = 'active' | 'upcoming' | 'completed' | 'cancelled';
-
-interface Booking {
-    id: string;
-    propertyId: number;
-    propertyTitle: string;
-    propertyLocation: string;
-    propertyImage: string;
-    checkIn: string;
-    checkOut: string;
-    guests: number;
-    nights: number;
-    total: number;
-    status: BookingStatus;
-    code: string;
-}
-
-// ─── Mock data ─────────────────────────────────────────────────────────────────
-const BOOKINGS: Booking[] = [
-    {
-        id: '1',
-        propertyId: 4,
-        propertyTitle: 'Vilă de Lux cu Piscină Privată',
-        propertyLocation: 'Constanța, România',
-        propertyImage: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=400&h=260&fit=crop',
-        checkIn: '2026-03-15',
-        checkOut: '2026-03-20',
-        guests: 4,
-        nights: 5,
-        total: 2195,
-        status: 'upcoming',
-        code: 'SB-A4F2KL',
-    },
-    {
-        id: '2',
-        propertyId: 6,
-        propertyTitle: 'Penthouse cu Panoramă la Oraș',
-        propertyLocation: 'Timișoara, România',
-        propertyImage: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&h=260&fit=crop',
-        checkIn: '2026-02-24',
-        checkOut: '2026-02-27',
-        guests: 2,
-        nights: 3,
-        total: 930,
-        status: 'active',
-        code: 'SB-B9XR21',
-    },
-    {
-        id: '3',
-        propertyId: 1,
-        propertyTitle: 'Luxury Suite cu vedere la mare',
-        propertyLocation: 'Bali, Indonezia',
-        propertyImage: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=260&fit=crop',
-        checkIn: '2025-12-20',
-        checkOut: '2025-12-27',
-        guests: 2,
-        nights: 7,
-        total: 1700,
-        status: 'completed',
-        code: 'SB-C7MN99',
-    },
-    {
-        id: '4',
-        propertyId: 3,
-        propertyTitle: 'Cabană Romantică la Munte',
-        propertyLocation: 'Brașov, România',
-        propertyImage: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=400&h=260&fit=crop',
-        checkIn: '2025-11-10',
-        checkOut: '2025-11-13',
-        guests: 2,
-        nights: 3,
-        total: 585,
-        status: 'completed',
-        code: 'SB-D3KP55',
-    },
-    {
-        id: '5',
-        propertyId: 2,
-        propertyTitle: 'Apartament Modern în Zona Lunitei',
-        propertyLocation: 'București, România',
-        propertyImage: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400&h=260&fit=crop',
-        checkIn: '2025-09-05',
-        checkOut: '2025-09-07',
-        guests: 1,
-        nights: 2,
-        total: 510,
-        status: 'cancelled',
-        code: 'SB-E1QW44',
-    },
-];
+import { useCurrency } from './lib/currency';
+import { bookingsChangedEvent, cancelBooking, getBookingsForOwner, type BookingRecord, type BookingStatus } from './lib/bookings';
+import { getSession, getStoredUser } from './lib/session';
 
 const STATUS_LABELS: Record<BookingStatus, string> = {
     active: 'Activ',
@@ -105,43 +16,98 @@ const STATUS_LABELS: Record<BookingStatus, string> = {
     cancelled: 'Anulat',
 };
 
-const MONTHS_RO = ['Ian','Feb','Mar','Apr','Mai','Iun','Iul','Aug','Sep','Oct','Nov','Dec'];
+const MONTHS_RO = ['Ian', 'Feb', 'Mar', 'Apr', 'Mai', 'Iun', 'Iul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
 function formatDate(iso: string) {
     if (!iso) return '';
     const [y, m, d] = iso.split('-');
-    return `${d} ${MONTHS_RO[parseInt(m) - 1]} ${y}`;
+    return `${d} ${MONTHS_RO[parseInt(m, 10) - 1]} ${y}`;
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
+function buildInitials(name: string) {
+    return name
+        .split(' ')
+        .map((part) => part[0] || '')
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
+}
+
 const MyBookings: React.FC = () => {
     const navigate = useNavigate();
     const [filter, setFilter] = useState<BookingStatus | 'all'>('all');
+    const [bookings, setBookings] = useState<BookingRecord[]>([]);
+    const { formatPrice } = useCurrency();
 
-    const filtered = filter === 'all' ? BOOKINGS : BOOKINGS.filter(b => b.status === filter);
+    const session = getSession();
+    const storedUser = getStoredUser();
+
+    useEffect(() => {
+        if (!session?.email) {
+            navigate('/login');
+            return;
+        }
+
+        const syncBookings = () => {
+            setBookings(getBookingsForOwner(session.email));
+        };
+
+        syncBookings();
+        window.addEventListener(bookingsChangedEvent, syncBookings);
+        return () => window.removeEventListener(bookingsChangedEvent, syncBookings);
+    }, [navigate, session?.email]);
+
+    const displayName = session?.fullName || storedUser?.fullName || storedUser?.email || 'Utilizator';
+    const displayInitials = session?.initials || buildInitials(displayName || 'U');
+
+    const bookingCounts = useMemo(
+        () => ({
+            all: bookings.length,
+            active: bookings.filter((booking) => booking.status === 'active').length,
+            upcoming: bookings.filter((booking) => booking.status === 'upcoming').length,
+            completed: bookings.filter((booking) => booking.status === 'completed').length,
+            cancelled: bookings.filter((booking) => booking.status === 'cancelled').length,
+        }),
+        [bookings],
+    );
+
+    const filtered = filter === 'all' ? bookings : bookings.filter((booking) => booking.status === filter);
+
+    const handleLogout = () => {
+        localStorage.removeItem('sb_session');
+        window.dispatchEvent(new Event('sb_session_changed'));
+        navigate('/login');
+    };
+
+    const handleCancelBooking = (bookingId: string) => {
+        if (!session?.email) return;
+        cancelBooking(bookingId, session.email);
+    };
 
     return (
         <div className="home">
             <Header />
 
             <div className="mp-page">
-
-                {/* ── Sidebar ── */}
                 <aside className="mp-sidebar">
                     <div className="mp-avatar-wrap">
-                        <div className="mp-avatar" style={{ background: '#2563eb' }}>AP</div>
+                        <div className="mp-avatar" style={{ background: '#2563eb' }}>{displayInitials}</div>
                     </div>
-                    <h2 className="mp-name">Alexandru Popescu</h2>
-                    <p className="mp-member-since">Membru din Februarie 2024</p>
+                    <h2 className="mp-name">{displayName}</h2>
+                    <p className="mp-member-since">{session?.email || 'Membru StayBooker'}</p>
 
                     <div className="mp-stats">
-                        <div className="mp-stat"><span className="mp-stat-val">12</span><span className="mp-stat-lbl">Rezervări</span></div>
-                        <div className="mp-stat"><span className="mp-stat-val">8</span><span className="mp-stat-lbl">Favorite</span></div>
-                        <div className="mp-stat"><span className="mp-stat-val">7</span><span className="mp-stat-lbl">Recenzii</span></div>
+                        <div className="mp-stat"><span className="mp-stat-val">{bookingCounts.all}</span><span className="mp-stat-lbl">Rezervări</span></div>
+                        <div className="mp-stat"><span className="mp-stat-val">{bookingCounts.upcoming}</span><span className="mp-stat-lbl">Urmează</span></div>
+                        <div className="mp-stat"><span className="mp-stat-val">{bookingCounts.completed}</span><span className="mp-stat-lbl">Finalizate</span></div>
                     </div>
 
                     <nav className="mp-nav">
                         <button className="mp-nav-item" onClick={() => navigate('/profile')}>
                             <span>👤</span> Profilul meu
+                        </button>
+                        <button className="mp-nav-item" onClick={() => navigate('/my-properties')}>
+                            <span>🏠</span> Cazări mele
                         </button>
                         <button className="mp-nav-item active">
                             <span>📋</span> Rezervările mele
@@ -152,13 +118,12 @@ const MyBookings: React.FC = () => {
                         <button className="mp-nav-item" onClick={() => navigate('/profile')}>
                             <span>🔒</span> Securitate
                         </button>
-                        <button className="mp-nav-item mp-nav-item--danger" onClick={() => { authService.logout(); navigate('/login'); }}>
+                        <button className="mp-nav-item mp-nav-item--danger" onClick={handleLogout}>
                             <span>🚪</span> Deconectare
                         </button>
                     </nav>
                 </aside>
 
-                {/* ── Main ── */}
                 <main className="mp-main">
                     <div className="mp-tab-content">
                         <div className="mp-tab-header">
@@ -166,35 +131,33 @@ const MyBookings: React.FC = () => {
                             <p>Istoricul complet al sejururilor tale</p>
                         </div>
 
-                        {/* Filter tabs */}
                         <div className="mb-filters">
-                            {(['all', 'active', 'upcoming', 'completed', 'cancelled'] as const).map(f => (
+                            {(['all', 'active', 'upcoming', 'completed', 'cancelled'] as const).map((currentFilter) => (
                                 <button
-                                    key={f}
-                                    className={`mb-filter-btn ${filter === f ? 'active' : ''}`}
-                                    onClick={() => setFilter(f)}
+                                    key={currentFilter}
+                                    className={`mb-filter-btn ${filter === currentFilter ? 'active' : ''}`}
+                                    onClick={() => setFilter(currentFilter)}
                                 >
-                                    {f === 'all' ? 'Toate' : STATUS_LABELS[f]}
+                                    {currentFilter === 'all' ? 'Toate' : STATUS_LABELS[currentFilter]}
                                     <span className="mb-filter-count">
-                                        {f === 'all' ? BOOKINGS.length : BOOKINGS.filter(b => b.status === f).length}
+                                        {currentFilter === 'all' ? bookingCounts.all : bookingCounts[currentFilter]}
                                     </span>
                                 </button>
                             ))}
                         </div>
 
-                        {/* Bookings list */}
                         {filtered.length === 0 ? (
                             <div className="mb-empty">
                                 <div>📭</div>
                                 <h3>Nicio rezervare</h3>
-                                <p>Nu ai rezervări în această categorie.</p>
+                                <p>Nu ai încă rezervări salvate pentru acest cont.</p>
                                 <button className="mp-save-btn" onClick={() => navigate('/')}>
                                     Caută cazări
                                 </button>
                             </div>
                         ) : (
                             <div className="mb-list">
-                                {filtered.map(booking => (
+                                {filtered.map((booking) => (
                                     <div key={booking.id} className="mb-card">
                                         <div className="mb-card-image">
                                             <img src={booking.propertyImage} alt={booking.propertyTitle} />
@@ -231,9 +194,20 @@ const MyBookings: React.FC = () => {
                                             </div>
 
                                             <div className="mb-card-footer">
-                                                <div>
-                                                    <span className="mb-code">#{booking.code}</span>
-                                                    <span className="mb-total">{booking.total.toLocaleString()} RON</span>
+                                                <div className="mb-booking-meta">
+                                                    <div>
+                                                        <span className="mb-code">#{booking.code}</span>
+                                                        <span className="mb-total">{formatPrice(booking.total)}</span>
+                                                    </div>
+                                                    <div className="mb-payment-row">
+                                                        <span className={`mb-payment-badge mb-payment-badge--${booking.paymentStatus || 'pending'}`}>
+                                                            {booking.paymentStatus === 'paid' ? 'Plătit' : 'În așteptare'}
+                                                        </span>
+                                                        <span className="mb-payment-label">
+                                                            {booking.paymentLabel || 'Metodă nespecificată'}
+                                                            {booking.paymentLast4 ? ` • **** ${booking.paymentLast4}` : ''}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                                 <div className="mb-actions">
                                                     <button
@@ -243,7 +217,7 @@ const MyBookings: React.FC = () => {
                                                         Vezi proprietatea
                                                     </button>
                                                     {booking.status === 'upcoming' && (
-                                                        <button className="mb-btn mb-btn--danger">
+                                                        <button className="mb-btn mb-btn--danger" onClick={() => handleCancelBooking(booking.id)}>
                                                             Anulează
                                                         </button>
                                                     )}
