@@ -2,6 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import { authService } from './services/authService';
 import './CSS/Home.css';
 import './CSS/Auth.css';
 
@@ -24,48 +25,20 @@ const Login: React.FC = () => {
         return e;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const errs = validate();
         if (Object.keys(errs).length) { setErrors(errs); return; }
         setErrors({});
         setLoading(true);
-
-        setTimeout(() => {
-            // Verifică dacă există un cont înregistrat
-            const raw = localStorage.getItem('sb_user');
-            if (raw) {
-                const savedUser = JSON.parse(raw);
-                if (savedUser.email !== email || savedUser.password !== password) {
-                    setErrors({ general: 'Email sau parolă incorectă.' });
-                    setLoading(false);
-                    return;
-                }
-                // Salvează sesiunea
-                const nameParts = (savedUser.fullName || savedUser.email).split(' ');
-                const initials = nameParts.map((w: string) => w[0]).join('').toUpperCase().slice(0, 2);
-                localStorage.setItem('sb_session', JSON.stringify({
-                    email: savedUser.email,
-                    fullName: savedUser.fullName || savedUser.email,
-                    initials,
-                }));
-                window.dispatchEvent(new Event('sb_session_changed'));
-            } else {
-                // Cont demo dacă nu există cont înregistrat
-                const nameParts = email.split('@')[0].split('.');
-                const initials = nameParts.map((w: string) => w[0]).join('').toUpperCase().slice(0, 2);
-                localStorage.setItem('sb_session', JSON.stringify({
-                    email,
-                    fullName: nameParts.join(' '),
-                    initials,
-                }));
-                window.dispatchEvent(new Event('sb_session_changed'));
-            }
-
-            setLoading(false);
-            setSubmitted(true);
-            setTimeout(() => navigate('/'), 900);
-        }, 1200);
+        const result = await authService.login({ email, password });
+        setLoading(false);
+        if (!result.ok) {
+            setErrors({ general: result.error || 'Email sau parolă incorectă.' });
+            return;
+        }
+        setSubmitted(true);
+        setTimeout(() => navigate('/'), 900);
     };
 
     return (
@@ -106,6 +79,12 @@ const Login: React.FC = () => {
                                 <div className="auth-header">
                                     <h1>Autentificare</h1>
                                     <p>Introdu datele contului tău StayBooker</p>
+                                    <p style={{ fontSize: '0.85rem', color: '#64748b', marginTop: 8 }}>
+                                        Admin: admin@staybooker.com / Admin123!
+                                    </p>
+                                    <p style={{ fontSize: '0.85rem', color: '#64748b', marginTop: 4 }}>
+                                        User: user@staybooker.com / User123!
+                                    </p>
                                 </div>
 
                                 <form className="auth-form" onSubmit={handleSubmit} noValidate>

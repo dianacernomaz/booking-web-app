@@ -2,6 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import { authService } from './services/authService';
 import './CSS/Home.css';
 import './CSS/Auth.css';
 import { useCurrency } from './lib/currency';
@@ -79,24 +80,25 @@ const Register: React.FC = () => {
         return e;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const errs = validate();
         if (Object.keys(errs).length) { setErrors(errs); return; }
         setErrors({});
         setLoading(true);
-        setTimeout(() => {
-            // Salvează utilizatorul în localStorage
-            localStorage.setItem('sb_user', JSON.stringify({
-                fullName:  form.fullName,
-                email:     form.email,
-                phone:     form.phone,
-                birthDate: form.birthDate,
-                password:  form.password,
-            }));
-            setLoading(false);
-            setSubmitted(true);
-        }, 1600);
+        const result = await authService.register({
+            fullName: form.fullName,
+            email: form.email,
+            phone: form.phone,
+            birthDate: form.birthDate,
+            password: form.password,
+        });
+        setLoading(false);
+        if (!result.ok) {
+            setErrors((prev) => ({ ...prev, email: result.error || 'Inregistrare esuata.' }));
+            return;
+        }
+        setSubmitted(true);
     };
 
     const passwordMatch = form.confirm && form.confirm === form.password;

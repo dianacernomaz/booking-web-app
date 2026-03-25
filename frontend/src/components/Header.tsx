@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCurrency } from '../lib/currency';
 
@@ -14,15 +14,14 @@ const Header: React.FC = () => {
     const [session, setSession] = useState<Session | null>(null);
     const { currency, currencies, setCurrency } = useCurrency();
 
-    // Citește sesiunea din localStorage la mount și la fiecare focus pe fereastră
+    // Cite?te sesiunea din localStorage la mount ?i la fiecare focus pe fereastra
     useEffect(() => {
         const readSession = () => {
-            const raw = localStorage.getItem('sb_session');
-            setSession(raw ? JSON.parse(raw) : null);
+            setSession(authService.getSession());
         };
         readSession();
         window.addEventListener('focus', readSession);
-        // Custom event pentru update imediat după login
+        // Custom event pentru update imediat dupa login
         window.addEventListener('sb_session_changed', readSession);
         return () => {
             window.removeEventListener('focus', readSession);
@@ -95,7 +94,7 @@ const Header: React.FC = () => {
 
                 {/* Mobile hamburger */}
                 <button className="menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Toggle menu">
-                    {isMenuOpen ? '✕' : '☰'}
+                    {isMenuOpen ? 'X' : 'Menu'}
                 </button>
             </div>
         </header>

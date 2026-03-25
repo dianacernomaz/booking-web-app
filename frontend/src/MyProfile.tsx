@@ -2,6 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import { authService } from './services/authService';
 import './CSS/Home.css';
 import './CSS/MyProfile.css';
 import { deleteManagedPropertiesForOwner, reassignManagedPropertiesOwner } from './lib/managedProperties';
@@ -9,14 +10,8 @@ import { deleteBookingsForOwner, reassignBookingsOwner } from './lib/bookings';
 
 type Tab = 'overview' | 'settings' | 'security';
 
-// ─── Citește datele reale din localStorage ─────────────────────────────────────
 function loadUser() {
-    const raw = localStorage.getItem('sb_user');
-    if (raw) return JSON.parse(raw);
-    // Dacă nu e cont înregistrat, citim din sesiune
-    const session = localStorage.getItem('sb_session');
-    if (session) return JSON.parse(session);
-    return null;
+    return authService.getCurrentUser();
 }
 
 function getInitials(fullName: string) {
@@ -30,6 +25,7 @@ function getInitials(fullName: string) {
 
 const MyProfile: React.FC = () => {
     const navigate = useNavigate();
+    const session = authService.getSession();
     const [activeTab, setActiveTab] = useState<Tab>('overview');
     const [saved, setSaved] = useState(false);
 
@@ -38,10 +34,10 @@ const MyProfile: React.FC = () => {
 
     // Dacă nu e logat, trimite la login
     useEffect(() => {
-        if (!localStorage.getItem('sb_session')) {
+        if (!authService.getSession()) {
             navigate('/login');
         }
-    }, []);
+    }, [navigate]);
 
     // Construim firstName / lastName din fullName dacă e necesar
     const fullName    = userData?.fullName || userData?.email || '';
@@ -97,8 +93,7 @@ const MyProfile: React.FC = () => {
         // Salvează datele actualizate în localStorage
         const previousEmail = loadUser()?.email || form.email;
         const newFullName = `${form.firstName} ${form.lastName}`.trim();
-        const updatedUser = {
-            ...(loadUser() || {}),
+        const result = authService.updateCurrentUserProfile({
             fullName: newFullName,
             email:    form.email,
             phone:    form.phone,
@@ -127,13 +122,8 @@ const MyProfile: React.FC = () => {
 
     const handleSecSave = (e: React.FormEvent) => {
         e.preventDefault();
-        const savedUser = loadUser();
         if (!secForm.currentPassword) {
             setSecMsg({ type: 'error', text: 'Introdu parola curentă.' });
-            return;
-        }
-        if (savedUser?.password && savedUser.password !== secForm.currentPassword) {
-            setSecMsg({ type: 'error', text: 'Parola curentă este incorectă.' });
             return;
         }
         if (secForm.newPassword.length < 6) {
@@ -144,17 +134,18 @@ const MyProfile: React.FC = () => {
             setSecMsg({ type: 'error', text: 'Parolele nu coincid.' });
             return;
         }
-        // Salvează parola nouă
-        const updatedUser = { ...(loadUser() || {}), password: secForm.newPassword };
-        localStorage.setItem('sb_user', JSON.stringify(updatedUser));
+        const result = authService.updateCurrentUserPassword(secForm.currentPassword, secForm.newPassword);
+        if (!result.ok) {
+            setSecMsg({ type: 'error', text: result.error || 'Parola curentă este incorectă.' });
+            return;
+        }
         setSecMsg({ type: 'success', text: 'Parola a fost schimbată cu succes!' });
         setSecForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
         setTimeout(() => setSecMsg(null), 4000);
     };
 
     const handleLogout = () => {
-        localStorage.removeItem('sb_session');
-        window.dispatchEvent(new Event('sb_session_changed'));
+        authService.logout();
         navigate('/login');
     };
 
@@ -287,6 +278,16 @@ const MyProfile: React.FC = () => {
                                         </div>
                                         <span className="mp-action-arrow">→</span>
                                     </div>
+                                    {session?.role === 'admin' && (
+                                        <div className="mp-action-card" onClick={() => navigate('/admin')}>
+                                            <div className="mp-action-icon" style={{ background: '#ede9fe' }}>🛠️</div>
+                                            <div>
+                                                <h4>Admin</h4>
+                                                <p>Deschide panoul de administrare</p>
+                                            </div>
+                                            <span className="mp-action-arrow">→</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
