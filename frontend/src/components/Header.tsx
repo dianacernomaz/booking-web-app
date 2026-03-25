@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCurrency } from '../lib/currency';
+import { authService } from '../services/authService';
 
 interface Session {
     email: string;
