@@ -90,7 +90,6 @@ const MyProfile: React.FC = () => {
 
     const handleSave = (e: React.FormEvent) => {
         e.preventDefault();
-        // Salvează datele actualizate în localStorage
         const previousEmail = loadUser()?.email || form.email;
         const newFullName = `${form.firstName} ${form.lastName}`.trim();
         const result = authService.updateCurrentUserProfile({
@@ -100,21 +99,15 @@ const MyProfile: React.FC = () => {
             city:     form.city,
             country:  form.country,
             bio:      form.bio,
-        };
-        localStorage.setItem('sb_user', JSON.stringify(updatedUser));
+        });
+
+        if (!result.ok) {
+            return;
+        }
+
+        const updatedUser = result.user;
         reassignManagedPropertiesOwner(previousEmail, form.email, newFullName);
         reassignBookingsOwner(previousEmail, form.email);
-        // Actualizează și sesiunea
-        const session = localStorage.getItem('sb_session');
-        if (session) {
-            const s = JSON.parse(session);
-            localStorage.setItem('sb_session', JSON.stringify({
-                ...s,
-                fullName: newFullName,
-                initials: getInitials(newFullName),
-            }));
-        }
-        window.dispatchEvent(new Event('sb_session_changed'));
         setUserData(updatedUser);
         setSaved(true);
         setTimeout(() => setSaved(false), 3000);
