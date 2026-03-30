@@ -16,6 +16,7 @@ interface Property {
     id: number;
     title: string;
     location: string;
+    category: string;
     price: number;
     rating: number;
     reviews: number;
@@ -57,6 +58,7 @@ const Home: React.FC = () => {
             id: 1,
             title: 'Luxury Suite cu vedere la mare',
             location: 'Bali, Indonezia',
+            category: 'hotels',
             price: 200,
             rating: 4.9,
             reviews: 128,
@@ -68,6 +70,7 @@ const Home: React.FC = () => {
             id: 2,
             title: 'Apartament Modern în Zona Lunitei',
             location: 'București, România',
+            category: 'apartments',
             price: 180,
             rating: 4.7,
             reviews: 94,
@@ -79,6 +82,7 @@ const Home: React.FC = () => {
             id: 3,
             title: 'Cabană Romantică la Munte',
             location: 'Brașov, România',
+            category: 'cabins',
             price: 145,
             rating: 4.8,
             reviews: 203,
@@ -91,6 +95,7 @@ const Home: React.FC = () => {
             id: 4,
             title: 'Vilă de Lux cu Piscină Privată',
             location: 'Constanța, România',
+            category: 'villas',
             price: 399,
             rating: 5.0,
             reviews: 87,
@@ -130,6 +135,11 @@ const Home: React.FC = () => {
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         navigate(`/search?location=${searchLocation}&checkIn=${checkIn}&checkOut=${checkOut}&guests=${guests}`);
+    };
+
+    const handleCategoryRedirect = (category: string) => {
+        setActiveFilter(category);
+        navigate(`/search?category=${encodeURIComponent(category)}&guests=${guests}`);
     };
 
     const toggleFavorite = (id: number) => {
@@ -205,9 +215,10 @@ const Home: React.FC = () => {
                             { key: 'beach',      label: '🏖️ Plajă și sol' },
                         ].map((f) => (
                             <button
+                                type="button"
                                 key={f.key}
                                 className={`filter-btn ${activeFilter === f.key ? 'active' : ''}`}
-                                onClick={() => setActiveFilter(f.key)}
+                                onClick={() => handleCategoryRedirect(f.key)}
                             >
                                 {f.label}
                             </button>
