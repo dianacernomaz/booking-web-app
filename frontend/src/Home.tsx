@@ -33,6 +33,8 @@ interface SpecialOffer {
     icon: string;
     color: string;
     buttonText: string;
+    category: string;
+    promoCode: string;
 }
 
 const Home: React.FC = () => {
@@ -113,6 +115,8 @@ const Home: React.FC = () => {
             icon: '🏖️',
             color: '#10b981',
             buttonText: 'Vezi oferta',
+            category: 'beach',
+            promoCode: 'early-bird',
         },
         {
             id: 2,
@@ -121,6 +125,8 @@ const Home: React.FC = () => {
             icon: '⏰',
             color: '#f59e0b',
             buttonText: 'Vezi oferta',
+            category: 'all',
+            promoCode: 'last-minute',
         },
         {
             id: 3,
@@ -129,6 +135,8 @@ const Home: React.FC = () => {
             icon: '🎉',
             color: '#8b5cf6',
             buttonText: 'Vezi oferta',
+            category: 'cabins',
+            promoCode: 'weekend-special',
         },
     ];
 
@@ -140,6 +148,56 @@ const Home: React.FC = () => {
     const handleCategoryRedirect = (category: string) => {
         setActiveFilter(category);
         navigate(`/search?category=${encodeURIComponent(category)}&guests=${guests}`);
+    };
+
+    const formatDateForInput = (date: Date) => date.toISOString().split('T')[0];
+
+    const getUpcomingWeekendRange = () => {
+        const today = new Date();
+        const day = today.getDay();
+        const daysUntilFriday = ((5 - day) + 7) % 7 || 7;
+        const friday = new Date(today);
+        friday.setDate(today.getDate() + daysUntilFriday);
+        const monday = new Date(friday);
+        monday.setDate(friday.getDate() + 3);
+        return {
+            checkIn: formatDateForInput(friday),
+            checkOut: formatDateForInput(monday),
+        };
+    };
+
+    const handleSpecialOfferClick = (offer: SpecialOffer) => {
+        const params = new URLSearchParams({
+            guests: String(guests),
+            category: offer.category,
+            promo: offer.promoCode,
+        });
+
+        if (offer.promoCode === 'early-bird') {
+            const checkIn = new Date();
+            checkIn.setDate(checkIn.getDate() + 35);
+            const checkOut = new Date(checkIn);
+            checkOut.setDate(checkIn.getDate() + 7);
+            params.set('checkIn', formatDateForInput(checkIn));
+            params.set('checkOut', formatDateForInput(checkOut));
+        }
+
+        if (offer.promoCode === 'last-minute') {
+            const checkIn = new Date();
+            checkIn.setDate(checkIn.getDate() + 1);
+            const checkOut = new Date(checkIn);
+            checkOut.setDate(checkIn.getDate() + 2);
+            params.set('checkIn', formatDateForInput(checkIn));
+            params.set('checkOut', formatDateForInput(checkOut));
+        }
+
+        if (offer.promoCode === 'weekend-special') {
+            const { checkIn, checkOut } = getUpcomingWeekendRange();
+            params.set('checkIn', checkIn);
+            params.set('checkOut', checkOut);
+        }
+
+        navigate(`/search?${params.toString()}`);
     };
 
     const toggleFavorite = (id: number) => {
@@ -316,7 +374,13 @@ const Home: React.FC = () => {
                                 </div>
                                 <h3>{offer.title}</h3>
                                 <p>{offer.description}</p>
-                                <button className="offer-button">{offer.buttonText}</button>
+                                <button
+                                    type="button"
+                                    className="offer-button"
+                                    onClick={() => handleSpecialOfferClick(offer)}
+                                >
+                                    {offer.buttonText}
+                                </button>
                             </div>
                         ))}
                     </div>

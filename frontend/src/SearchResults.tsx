@@ -159,6 +159,15 @@ function categoryLabel(category: string) {
     return labels[category] ?? category;
 }
 
+function promoLabel(promo: string) {
+    const labels: Record<string, string> = {
+        'early-bird': 'Reducere early booking',
+        'last-minute': 'Oferta last minute',
+        'weekend-special': 'Weekend special',
+    };
+    return labels[promo] ?? promo;
+}
+
 function inAvailabilityRange(checkIn: string, checkOut: string, from: string, to: string) {
     if (!checkIn || !checkOut) return true;
     return (
@@ -175,6 +184,7 @@ function readParamsFromUrl() {
         checkOut: sp.get("checkOut") ?? "",
         guests:   Number(sp.get("guests") ?? "2"),
         category: sp.get("category") ?? "all",
+        promo: sp.get("promo") ?? "",
     };
 }
 
@@ -198,6 +208,7 @@ const SearchResults: React.FC = () => {
     const [checkOut, setCheckOut] = useState(initialParams.checkOut);
     const [guests,   setGuests]   = useState(initialParams.guests);
     const [category] = useState(initialParams.category);
+    const [promo] = useState(initialParams.promo);
 
     const [activeParams, setActiveParams] = useState(initialParams);
     const [sortBy,       setSortBy]       = useState("recommended");
@@ -215,7 +226,7 @@ const SearchResults: React.FC = () => {
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         const params = { location, checkIn, checkOut, guests };
-        const paramsWithCategory = { ...params, category };
+        const paramsWithCategory = { ...params, category, promo };
         setActiveParams(paramsWithCategory);
         const qs = new URLSearchParams({
             location,
@@ -223,6 +234,7 @@ const SearchResults: React.FC = () => {
             checkOut,
             guests: String(guests),
             category,
+            promo,
         }).toString();
         navigate(`/search?${qs}`, { replace: true });
     };
@@ -363,6 +375,9 @@ const SearchResults: React.FC = () => {
                                 {results.length === 1 ? "proprietate găsită" : "proprietăți găsite"}
                                 {activeParams.category && activeParams.category !== "all" && (
                                     <> din categoria <span className="sr-location-tag">"{categoryLabel(activeParams.category)}"</span></>
+                                )}
+                                {activeParams.promo && (
+                                    <> pentru <span className="sr-location-tag">"{promoLabel(activeParams.promo)}"</span></>
                                 )}
                                 {activeParams.location && (
                                     <> în <span className="sr-location-tag">"{activeParams.location}"</span></>
