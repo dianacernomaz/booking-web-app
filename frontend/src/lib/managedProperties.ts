@@ -28,6 +28,7 @@ export interface ManagedPropertySummary {
     title: string;
     location: string;
     city: string;
+    category: string;
     price: number;
     rating: number;
     reviews: number;
@@ -62,6 +63,20 @@ function writeManagedProperties(properties: ManagedProperty[]) {
 
 function buildLocation(property: Pick<ManagedProperty, 'city' | 'country'>) {
     return [property.city, property.country].filter(Boolean).join(', ');
+}
+
+function normalizeText(value: string) {
+    return value.trim().toLowerCase();
+}
+
+function inferCategory(property: Pick<ManagedProperty, 'title' | 'features'>) {
+    const text = normalizeText(`${property.title} ${property.features.join(' ')}`);
+    if (text.includes('hotel') || text.includes('suite') || text.includes('resort')) return 'hotels';
+    if (text.includes('apartament') || text.includes('studio') || text.includes('penthouse')) return 'apartments';
+    if (text.includes('vil')) return 'villas';
+    if (text.includes('caban')) return 'cabins';
+    if (text.includes('plaj') || text.includes('mare')) return 'beach';
+    return 'all';
 }
 
 function uniqueStrings(values: string[]) {
@@ -109,6 +124,7 @@ export function toManagedPropertySummary(property: ManagedProperty): ManagedProp
         title: property.title,
         location: buildLocation(property),
         city: property.city,
+        category: inferCategory(property),
         price: property.price,
         rating: 0,
         reviews: 0,

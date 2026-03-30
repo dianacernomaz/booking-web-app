@@ -73,20 +73,22 @@ const About: React.FC = () => {
 
             {/* ── Hero ── */}
             <section className="about-hero">
-                <div className="about-hero-inner">
-                    <span className="about-tag">Povestea noastră</span>
-                    <h1>Construim viitorul<br />călătoriilor</h1>
-                    <p>
-                        StayBooker a pornit dintr-o idee simplă: rezervarea unei cazări trebuie
-                        să fie la fel de plăcută ca vacanța în sine. Suntem o echipă de pasionați
-                        care construiește zilnic platforma în care milioane de oameni au încredere.
-                    </p>
-                </div>
-                <div className="about-hero-visual">
-                    <div className="about-globe">🌍</div>
-                    <div className="about-float about-float--1">✈️</div>
-                    <div className="about-float about-float--2">🏨</div>
-                    <div className="about-float about-float--3">⭐</div>
+                <div className="about-hero-content">
+                    <div className="about-hero-inner">
+                        <span className="about-tag">Povestea noastră</span>
+                        <h1>Construim viitorul<br />călătoriilor</h1>
+                        <p>
+                            StayBooker a pornit dintr-o idee simplă: rezervarea unei cazări trebuie
+                            să fie la fel de plăcută ca vacanța în sine. Suntem o echipă de pasionați
+                            care construiește zilnic platforma în care milioane de oameni au încredere.
+                        </p>
+                    </div>
+                    <div className="about-hero-visual">
+                        <div className="about-globe">🌍</div>
+                        <div className="about-float about-float--1">✈️</div>
+                        <div className="about-float about-float--2">🏨</div>
+                        <div className="about-float about-float--3">⭐</div>
+                    </div>
                 </div>
             </section>
 

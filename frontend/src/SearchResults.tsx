@@ -14,6 +14,7 @@ interface Property {
     title: string;
     location: string;
     city: string;
+    category: string;
     price: number;
     rating: number;
     reviews: number;
@@ -34,6 +35,7 @@ const PROPERTIES: Property[] = [
         title: "Luxury Suite cu vedere la mare",
         location: "Bali, Indonezia",
         city: "Bali",
+        category: "hotels",
         price: 200,
         rating: 4.9,
         reviews: 128,
@@ -49,6 +51,7 @@ const PROPERTIES: Property[] = [
         title: "Apartament Modern în Zona Lunitei",
         location: "București, România",
         city: "București",
+        category: "apartments",
         price: 180,
         rating: 4.7,
         reviews: 94,
@@ -64,6 +67,7 @@ const PROPERTIES: Property[] = [
         title: "Cabană Romantică la Munte",
         location: "Brașov, România",
         city: "Brașov",
+        category: "cabins",
         price: 145,
         rating: 4.8,
         reviews: 203,
@@ -80,6 +84,7 @@ const PROPERTIES: Property[] = [
         title: "Vilă de Lux cu Piscină Privată",
         location: "Constanța, România",
         city: "Constanța",
+        category: "villas",
         price: 399,
         rating: 5.0,
         reviews: 87,
@@ -96,6 +101,7 @@ const PROPERTIES: Property[] = [
         title: "Studio Cozy în Centrul Vechi",
         location: "Cluj-Napoca, România",
         city: "Cluj-Napoca",
+        category: "apartments",
         price: 110,
         rating: 4.6,
         reviews: 57,
@@ -111,6 +117,7 @@ const PROPERTIES: Property[] = [
         title: "Penthouse cu Panoramă la Oraș",
         location: "Timișoara, România",
         city: "Timișoara",
+        category: "apartments",
         price: 260,
         rating: 4.9,
         reviews: 42,
@@ -130,6 +137,28 @@ function normalize(s: string) {
     return s.trim().toLowerCase();
 }
 
+function detectCategory(title: string, features: string[]) {
+    const text = normalize(`${title} ${features.join(" ")}`);
+    if (text.includes("hotel") || text.includes("suite") || text.includes("resort")) return "hotels";
+    if (text.includes("apartament") || text.includes("studio") || text.includes("penthouse")) return "apartments";
+    if (text.includes("vil")) return "villas";
+    if (text.includes("caban")) return "cabins";
+    if (text.includes("plaj") || text.includes("mare")) return "beach";
+    return "all";
+}
+
+function categoryLabel(category: string) {
+    const labels: Record<string, string> = {
+        hotels: "Hoteluri",
+        apartments: "Apartamente",
+        villas: "Vile",
+        cabins: "Cabane",
+        beach: "Plaja si soare",
+        all: "Toate categoriile",
+    };
+    return labels[category] ?? category;
+}
+
 function inAvailabilityRange(checkIn: string, checkOut: string, from: string, to: string) {
     if (!checkIn || !checkOut) return true;
     return (
@@ -145,6 +174,7 @@ function readParamsFromUrl() {
         checkIn:  sp.get("checkIn")  ?? "",
         checkOut: sp.get("checkOut") ?? "",
         guests:   Number(sp.get("guests") ?? "2"),
+        category: sp.get("category") ?? "all",
     };
 }
 
@@ -167,6 +197,7 @@ const SearchResults: React.FC = () => {
     const [checkIn,  setCheckIn]  = useState(initialParams.checkIn);
     const [checkOut, setCheckOut] = useState(initialParams.checkOut);
     const [guests,   setGuests]   = useState(initialParams.guests);
+    const [category] = useState(initialParams.category);
 
     const [activeParams, setActiveParams] = useState(initialParams);
     const [sortBy,       setSortBy]       = useState("recommended");
@@ -184,12 +215,14 @@ const SearchResults: React.FC = () => {
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         const params = { location, checkIn, checkOut, guests };
-        setActiveParams(params);
+        const paramsWithCategory = { ...params, category };
+        setActiveParams(paramsWithCategory);
         const qs = new URLSearchParams({
             location,
             checkIn,
             checkOut,
             guests: String(guests),
+            category,
         }).toString();
         navigate(`/search?${qs}`, { replace: true });
     };
@@ -204,7 +237,6 @@ const SearchResults: React.FC = () => {
 
     // Validation
     const errors: string[] = [];
-    if (!activeParams.location.trim()) errors.push("Lipsește destinația.");
     if (
         activeParams.checkIn &&
         activeParams.checkOut &&
@@ -225,6 +257,11 @@ const SearchResults: React.FC = () => {
                 !loc ||
                 normalize(p.city).includes(loc) ||
                 normalize(p.location).includes(loc);
+            const propertyCategory = p.category || detectCategory(p.title, p.features);
+            const matchesCategory =
+                !activeParams.category ||
+                activeParams.category === "all" ||
+                propertyCategory === activeParams.category;
             const matchesGuests = activeParams.guests <= p.maxGuests;
             const matchesDates  = inAvailabilityRange(
                 activeParams.checkIn,
@@ -232,7 +269,7 @@ const SearchResults: React.FC = () => {
                 p.availableFrom,
                 p.availableTo
             );
-            return matchesLocation && matchesGuests && matchesDates;
+            return matchesLocation && matchesCategory && matchesGuests && matchesDates;
         });
         if (sortBy === "price-asc")  filtered = [...filtered].sort((a, b) => a.price - b.price);
         if (sortBy === "price-desc") filtered = [...filtered].sort((a, b) => b.price - a.price);
@@ -324,6 +361,9 @@ const SearchResults: React.FC = () => {
                             <>
                                 <strong>{results.length}</strong>{" "}
                                 {results.length === 1 ? "proprietate găsită" : "proprietăți găsite"}
+                                {activeParams.category && activeParams.category !== "all" && (
+                                    <> din categoria <span className="sr-location-tag">"{categoryLabel(activeParams.category)}"</span></>
+                                )}
                                 {activeParams.location && (
                                     <> în <span className="sr-location-tag">"{activeParams.location}"</span></>
                                 )}
