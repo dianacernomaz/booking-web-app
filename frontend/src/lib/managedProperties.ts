@@ -30,6 +30,7 @@ export interface ManagedPropertySummary {
     title: string;
     location: string;
     city: string;
+    category: string;
     price: number;
     rating: number;
     reviews: number;
