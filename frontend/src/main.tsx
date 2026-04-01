@@ -3,14 +3,14 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import './CSS/index.css';
 import App from './App';
-import { ApiProvider } from './api/ApiProvider';
+import { AxiosProvider } from './providers/AxiosProvider';
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
-        <ApiProvider>
+        <AxiosProvider>
             <BrowserRouter>
                 <App />
             </BrowserRouter>
-        </ApiProvider>
+        </AxiosProvider>
     </StrictMode>,
 );

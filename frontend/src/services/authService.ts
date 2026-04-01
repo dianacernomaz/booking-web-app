@@ -1,5 +1,4 @@
-import axios from 'axios';
-import { getApiClient } from '../api/httpClient';
+import { axiosClient, SESSION_CHANGED_EVENT, SESSION_KEY, USER_KEY } from '../providers/axiosClient';
 
 export interface SessionUser {
     email: string;
@@ -9,7 +8,6 @@ export interface SessionUser {
 }
 
 export interface StoredUser {
-    id?: string;
     fullName: string;
     email: string;
     phone?: string;
@@ -17,20 +15,9 @@ export interface StoredUser {
     city?: string;
     country?: string;
     bio?: string;
+    password: string;
     role?: 'admin' | 'user';
 }
-
-interface AuthResponse {
-    id: string;
-    email: string;
-    fullName: string;
-    initials: string;
-    role: 'admin' | 'user';
-}
-
-const USER_KEY = 'sb_user';
-const SESSION_KEY = 'sb_session';
-const SESSION_CHANGED_EVENT = 'sb_session_changed';
 
 function readJson<T>(key: string): T | null {
     const raw = localStorage.getItem(key);
@@ -47,57 +34,27 @@ function writeJson(key: string, value: unknown) {
     localStorage.setItem(key, JSON.stringify(value));
 }
 
-function normalizeEmail(email: string) {
-    return email.trim().toLowerCase();
-}
-
-function saveSession(user: StoredUser) {
-    const session: SessionUser = {
-        email: user.email,
-        fullName: user.fullName,
-        initials:
-            user.fullName
-                .split(' ')
-                .map((part) => part[0] || '')
-                .join('')
-                .toUpperCase()
-                .slice(0, 2) || 'U',
-        role: user.role || 'user',
-    };
-
-    writeJson(USER_KEY, user);
+function saveSession(session: SessionUser, user?: StoredUser | null) {
     writeJson(SESSION_KEY, session);
+    if (user) {
+        writeJson(USER_KEY, user);
+    }
     window.dispatchEvent(new Event(SESSION_CHANGED_EVENT));
-    return session;
 }
 
-function toStoredUser(payload: {
-    id?: string;
-    fullName: string;
-    email: string;
-    phone?: string;
-    birthDate?: string;
-    city?: string;
-    country?: string;
-    bio?: string;
-    role?: 'admin' | 'user';
-}) {
-    return {
-        id: payload.id,
-        fullName: payload.fullName,
-        email: normalizeEmail(payload.email),
-        phone: payload.phone ?? '',
-        birthDate: payload.birthDate ?? '',
-        city: payload.city ?? '',
-        country: payload.country ?? '',
-        bio: payload.bio ?? '',
-        role: payload.role ?? 'user',
-    } satisfies StoredUser;
+function buildInitials(fullName: string) {
+    return fullName
+        .split(' ')
+        .map((part) => part[0] || '')
+        .join('')
+        .toUpperCase()
+        .slice(0, 2) || 'U';
 }
 
-function extractError(error: unknown, fallback: string) {
-    if (axios.isAxiosError<{ message?: string }>(error)) {
-        return error.response?.data?.message || fallback;
+function normalizeApiError(error: unknown, fallback: string) {
+    if (typeof error === 'object' && error && 'response' in error) {
+        const apiError = error as { response?: { data?: { message?: string } } };
+        return apiError.response?.data?.message || fallback;
     }
 
     return fallback;
@@ -106,16 +63,15 @@ function extractError(error: unknown, fallback: string) {
 export const authService = {
     async login({ email, password }: { email: string; password: string }) {
         try {
-            const { data } = await getApiClient().post<AuthResponse>('/auth/login', {
-                email,
-                password,
+            const { data: session } = await axiosClient.post<SessionUser>('/auth/login', { email, password });
+            const { data: user } = await axiosClient.get<StoredUser>('/users/profile', {
+                params: { email: session.email },
             });
 
-            const user = await this.fetchUserProfile(data.email);
-            saveSession(user);
-            return { ok: true as const, user: readJson<SessionUser>(SESSION_KEY)! };
+            saveSession(session, user);
+            return { ok: true as const, user: session };
         } catch (error) {
-            return { ok: false as const, error: extractError(error, 'Email sau parola incorecta.') };
+            return { ok: false as const, error: normalizeApiError(error, 'Email sau parola incorecta.') };
         }
     },
 
@@ -127,13 +83,24 @@ export const authService = {
         password: string;
     }) {
         try {
-            const response = await getApiClient().post<AuthResponse>('/auth/register', data);
-            const user = await this.fetchUserProfile(response.data.email);
-            saveSession(user);
-            return { ok: true as const, user: readJson<SessionUser>(SESSION_KEY)! };
+            const { data: session } = await axiosClient.post<SessionUser>('/auth/register', data);
+            const { data: user } = await axiosClient.get<StoredUser>('/users/profile', {
+                params: { email: session.email },
+            });
+
+            saveSession(session, user);
+            return { ok: true as const, user: session };
         } catch (error) {
-            return { ok: false as const, error: extractError(error, 'Există deja un cont cu acest email.') };
+            return { ok: false as const, error: normalizeApiError(error, 'Inregistrare esuata.') };
         }
+    },
+
+    async fetchCurrentUser(email: string) {
+        const { data } = await axiosClient.get<StoredUser>('/users/profile', {
+            params: { email },
+        });
+        writeJson(USER_KEY, data);
+        return data;
     },
 
     getSession() {
@@ -142,24 +109,6 @@ export const authService = {
 
     getCurrentUser() {
         return readJson<StoredUser>(USER_KEY);
-    },
-
-    async fetchUserProfile(email: string) {
-        const { data } = await getApiClient().get<{
-            id: string;
-            fullName: string;
-            email: string;
-            phone?: string;
-            birthDate?: string;
-            city?: string;
-            country?: string;
-            bio?: string;
-            role?: 'admin' | 'user';
-        }>(`/users/${encodeURIComponent(email)}`);
-
-        const user = toStoredUser(data);
-        writeJson(USER_KEY, user);
-        return user;
     },
 
     async updateCurrentUserProfile(profile: {
@@ -176,58 +125,59 @@ export const authService = {
         }
 
         try {
-            const { data } = await getApiClient().put<{
-                id: string;
-                fullName: string;
-                email: string;
-                phone?: string;
-                birthDate?: string;
-                city?: string;
-                country?: string;
-                bio?: string;
-                role?: 'admin' | 'user';
-            }>(`/users/${encodeURIComponent(currentUser.email)}/profile`, profile);
+            const { data: user } = await axiosClient.put<StoredUser>('/users/profile', {
+                currentEmail: currentUser.email,
+                ...profile,
+            });
 
-            const updatedUser = toStoredUser({ ...currentUser, ...data });
-            saveSession(updatedUser);
-            return { ok: true as const, user: updatedUser };
+            const session: SessionUser = {
+                email: user.email,
+                fullName: user.fullName,
+                initials: buildInitials(user.fullName || user.email),
+                role: user.role || 'user',
+            };
+
+            saveSession(session, user);
+            return { ok: true as const, user };
         } catch (error) {
-            return { ok: false as const, error: extractError(error, 'Actualizarea profilului a esuat.') };
+            return { ok: false as const, error: normalizeApiError(error, 'Nu am putut actualiza profilul.') };
         }
     },
 
     async updateCurrentUserPassword(currentPassword: string, newPassword: string) {
-        const currentUser = readJson<StoredUser>(USER_KEY);
-        if (!currentUser) {
+        const session = readJson<SessionUser>(SESSION_KEY);
+        if (!session) {
             return { ok: false as const, error: 'Nu exista utilizator autentificat.' };
         }
 
         try {
-            await getApiClient().put(`/users/${encodeURIComponent(currentUser.email)}/password`, {
+            await axiosClient.put('/users/password', {
+                email: session.email,
                 currentPassword,
                 newPassword,
             });
-
             return { ok: true as const };
         } catch (error) {
-            return { ok: false as const, error: extractError(error, 'Parola curenta este incorecta.') };
+            return { ok: false as const, error: normalizeApiError(error, 'Parola curenta este incorecta.') };
         }
     },
 
     async deleteCurrentUser() {
-        const currentUser = readJson<StoredUser>(USER_KEY);
-        if (!currentUser) {
+        const session = readJson<SessionUser>(SESSION_KEY);
+        if (!session) {
             return { ok: false as const, error: 'Nu exista utilizator autentificat.' };
         }
 
         try {
-            await getApiClient().delete(`/users/${encodeURIComponent(currentUser.email)}`);
+            await axiosClient.delete('/users', {
+                params: { email: session.email },
+            });
             localStorage.removeItem(USER_KEY);
             localStorage.removeItem(SESSION_KEY);
             window.dispatchEvent(new Event(SESSION_CHANGED_EVENT));
             return { ok: true as const };
         } catch (error) {
-            return { ok: false as const, error: extractError(error, 'Stergerea contului a esuat.') };
+            return { ok: false as const, error: normalizeApiError(error, 'Nu am putut sterge contul.') };
         }
     },
 
