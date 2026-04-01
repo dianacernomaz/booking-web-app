@@ -1,0 +1,16 @@
+C:\Users\Asus\Desktop\booking-web-app\backend\MyProject.BusinessLayer\obj\Debug\net10.0\MyProject.BusinessLayer.csproj.AssemblyReference.cache
+C:\Users\Asus\Desktop\booking-web-app\backend\MyProject.BusinessLayer\obj\Debug\net10.0\MyProject.BusinessLayer.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Asus\Desktop\booking-web-app\backend\MyProject.BusinessLayer\obj\Debug\net10.0\MyProject.BusinessLayer.AssemblyInfoInputs.cache
+C:\Users\Asus\Desktop\booking-web-app\backend\MyProject.BusinessLayer\obj\Debug\net10.0\MyProject.BusinessLayer.AssemblyInfo.cs
+C:\Users\Asus\Desktop\booking-web-app\backend\MyProject.BusinessLayer\obj\Debug\net10.0\MyProject.BusinessLayer.csproj.CoreCompileInputs.cache
+C:\Users\Asus\Desktop\booking-web-app\backend\MyProject.BusinessLayer\obj\Debug\net10.0\MyProject.BusinessLayer.sourcelink.json
+C:\Users\Asus\Desktop\booking-web-app\backend\MyProject.BusinessLayer\bin\Debug\net10.0\MyProject.BusinessLayer.deps.json
+C:\Users\Asus\Desktop\booking-web-app\backend\MyProject.BusinessLayer\bin\Debug\net10.0\MyProject.BusinessLayer.dll
+C:\Users\Asus\Desktop\booking-web-app\backend\MyProject.BusinessLayer\bin\Debug\net10.0\MyProject.BusinessLayer.pdb
+C:\Users\Asus\Desktop\booking-web-app\backend\MyProject.BusinessLayer\bin\Debug\net10.0\MyProject.Domain.dll
+C:\Users\Asus\Desktop\booking-web-app\backend\MyProject.BusinessLayer\bin\Debug\net10.0\MyProject.Domain.pdb
+C:\Users\Asus\Desktop\booking-web-app\backend\MyProject.BusinessLayer\obj\Debug\net10.0\MyProjec.B34B1478.Up2Date
+C:\Users\Asus\Desktop\booking-web-app\backend\MyProject.BusinessLayer\obj\Debug\net10.0\MyProject.BusinessLayer.dll
+C:\Users\Asus\Desktop\booking-web-app\backend\MyProject.BusinessLayer\obj\Debug\net10.0\refint\MyProject.BusinessLayer.dll
+C:\Users\Asus\Desktop\booking-web-app\backend\MyProject.BusinessLayer\obj\Debug\net10.0\MyProject.BusinessLayer.pdb
+C:\Users\Asus\Desktop\booking-web-app\backend\MyProject.BusinessLayer\obj\Debug\net10.0\ref\MyProject.BusinessLayer.dll
