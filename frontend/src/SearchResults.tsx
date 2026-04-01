@@ -5,7 +5,7 @@ import Footer from "./components/Footer";
 import "./CSS/Home.css";
 import "./CSS/SearchResults.css";
 import { useCurrency } from "./lib/currency";
-import { getManagedPropertySummaries } from "./lib/managedProperties";
+import { getManagedPropertySummaries, refreshManagedProperties } from "./lib/managedProperties";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -207,6 +207,7 @@ const SearchResults: React.FC = () => {
     );
 
     useEffect(() => {
+        void refreshManagedProperties();
         const syncProperties = () => setPropertiesVersion((prev) => prev + 1);
         window.addEventListener('sb_properties_changed', syncProperties);
         return () => window.removeEventListener('sb_properties_changed', syncProperties);

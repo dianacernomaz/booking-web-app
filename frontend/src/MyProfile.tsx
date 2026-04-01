@@ -88,11 +88,11 @@ const MyProfile: React.FC = () => {
         setSaved(false);
     };
 
-    const handleSave = (e: React.FormEvent) => {
+    const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
         const previousEmail = loadUser()?.email || form.email;
         const newFullName = `${form.firstName} ${form.lastName}`.trim();
-        const result = authService.updateCurrentUserProfile({
+        const result = await authService.updateCurrentUserProfile({
             fullName: newFullName,
             email:    form.email,
             phone:    form.phone,
@@ -106,14 +106,14 @@ const MyProfile: React.FC = () => {
         }
 
         const updatedUser = result.user;
-        reassignManagedPropertiesOwner(previousEmail, form.email, newFullName);
+        await reassignManagedPropertiesOwner(previousEmail, form.email, newFullName);
         reassignBookingsOwner(previousEmail, form.email);
         setUserData(updatedUser);
         setSaved(true);
         setTimeout(() => setSaved(false), 3000);
     };
 
-    const handleSecSave = (e: React.FormEvent) => {
+    const handleSecSave = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!secForm.currentPassword) {
             setSecMsg({ type: 'error', text: 'Introdu parola curentă.' });
@@ -127,7 +127,7 @@ const MyProfile: React.FC = () => {
             setSecMsg({ type: 'error', text: 'Parolele nu coincid.' });
             return;
         }
-        const result = authService.updateCurrentUserPassword(secForm.currentPassword, secForm.newPassword);
+        const result = await authService.updateCurrentUserPassword(secForm.currentPassword, secForm.newPassword);
         if (!result.ok) {
             setSecMsg({ type: 'error', text: result.error || 'Parola curentă este incorectă.' });
             return;
@@ -414,14 +414,14 @@ const MyProfile: React.FC = () => {
                                     <h3>Zonă periculoasă</h3>
                                     <p>Odată șters, contul nu poate fi recuperat.</p>
                                     <button type="button" className="mp-delete-btn" onClick={() => {
-                                        if (form.email) {
-                                            deleteManagedPropertiesForOwner(form.email);
-                                            deleteBookingsForOwner(form.email);
-                                        }
-                                        localStorage.removeItem('sb_user');
-                                        localStorage.removeItem('sb_session');
-                                        window.dispatchEvent(new Event('sb_session_changed'));
-                                        navigate('/register');
+                                        void (async () => {
+                                            if (form.email) {
+                                                await deleteManagedPropertiesForOwner(form.email);
+                                                deleteBookingsForOwner(form.email);
+                                            }
+                                            await authService.deleteCurrentUser();
+                                            navigate('/register');
+                                        })();
                                     }}>
                                         🗑️ Șterge contul
                                     </button>

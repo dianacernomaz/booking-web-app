@@ -9,6 +9,7 @@ import { useCurrency } from './lib/currency';
 import {
     deleteManagedProperty,
     getManagedPropertiesForOwner,
+    refreshManagedProperties,
     saveManagedProperty,
 } from './lib/managedProperties';
 import type { ManagedProperty } from './lib/managedProperties';
@@ -99,6 +100,11 @@ const MyProperties: React.FC = () => {
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
     useEffect(() => {
+        const loadProperties = async (email: string) => {
+            await refreshManagedProperties();
+            setProperties(getManagedPropertiesForOwner(email));
+        };
+
         const nextSession = getSession();
         if (!nextSession) {
             navigate('/login');
@@ -106,7 +112,7 @@ const MyProperties: React.FC = () => {
         }
 
         setSession(nextSession);
-        setProperties(getManagedPropertiesForOwner(nextSession.email));
+        void loadProperties(nextSession.email);
 
         const syncProperties = () => {
             const activeSession = getSession();
@@ -158,7 +164,7 @@ const MyProperties: React.FC = () => {
         return null;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!session) return;
 
@@ -168,7 +174,7 @@ const MyProperties: React.FC = () => {
             return;
         }
 
-        const saved = saveManagedProperty({
+        const saved = await saveManagedProperty({
             id: editingId ?? undefined,
             ownerEmail: session.email,
             host: session.fullName,
@@ -196,6 +202,7 @@ const MyProperties: React.FC = () => {
             return;
         }
 
+        await refreshManagedProperties();
         setProperties(getManagedPropertiesForOwner(session.email));
         setEditingId(saved.id);
         setForm(toFormState(saved));
@@ -207,13 +214,14 @@ const MyProperties: React.FC = () => {
         });
     };
 
-    const handleDelete = (property: ManagedProperty) => {
+    const handleDelete = async (property: ManagedProperty) => {
         if (!session) return;
 
         const confirmed = window.confirm(`Stergi proprietatea "${property.title}"?`);
         if (!confirmed) return;
 
-        deleteManagedProperty(property.id, session.email);
+        await deleteManagedProperty(property.id, session.email);
+        await refreshManagedProperties();
         setProperties(getManagedPropertiesForOwner(session.email));
 
         if (editingId === property.id) {

@@ -1,3 +1,6 @@
+import axios from 'axios';
+import { getApiClient } from '../api/httpClient';
+
 export interface ManagedProperty {
     id: number;
     ownerEmail: string;
@@ -42,7 +45,7 @@ export interface ManagedPropertySummary {
 }
 
 const CUSTOM_PROPERTIES_KEY = 'sb_host_properties';
-const DEFAULT_MAX_PROPERTY_ID = 6;
+const PROPERTIES_CHANGED_EVENT = 'sb_properties_changed';
 
 function readManagedProperties() {
     const raw = localStorage.getItem(CUSTOM_PROPERTIES_KEY);
@@ -58,7 +61,7 @@ function readManagedProperties() {
 
 function writeManagedProperties(properties: ManagedProperty[]) {
     localStorage.setItem(CUSTOM_PROPERTIES_KEY, JSON.stringify(properties));
-    window.dispatchEvent(new Event('sb_properties_changed'));
+    window.dispatchEvent(new Event(PROPERTIES_CHANGED_EVENT));
 }
 
 function buildLocation(property: Pick<ManagedProperty, 'city' | 'country'>) {
@@ -83,31 +86,32 @@ function uniqueStrings(values: string[]) {
     return Array.from(new Set(values.filter(Boolean)));
 }
 
-function buildAmenityList(property: ManagedProperty) {
-    const featureAmenities = property.features.map((feature) => ({
-        icon: '✓',
-        label: feature,
-        available: true,
-    }));
+function extractError(error: unknown, fallback: string) {
+    if (axios.isAxiosError<{ message?: string }>(error)) {
+        return error.response?.data?.message || fallback;
+    }
 
-    return uniqueStrings(featureAmenities.map((item) => item.label)).map((label) => ({
-        icon: '✓',
-        label,
-        available: true,
-    }));
-}
-
-function buildNearbyList(property: ManagedProperty) {
-    return [
-        { icon: '📍', name: property.address, dist: 'La locatie' },
-        { icon: '🏙️', name: `Centru ${property.city}`, dist: '1.2 km' },
-        { icon: '🛒', name: 'Supermarket', dist: '700 m' },
-        { icon: '🍽️', name: 'Restaurant', dist: '450 m' },
-    ];
+    return fallback;
 }
 
 export function getManagedProperties() {
     return readManagedProperties();
+}
+
+export async function refreshManagedProperties(ownerEmail?: string) {
+    const { data } = await getApiClient().get<ManagedProperty[]>('/properties', {
+        params: ownerEmail ? { ownerEmail } : undefined,
+    });
+
+    if (!ownerEmail) {
+        writeManagedProperties(data);
+        return data;
+    }
+
+    const current = readManagedProperties();
+    const filteredCurrent = current.filter((property) => property.ownerEmail !== ownerEmail);
+    writeManagedProperties([...filteredCurrent, ...data]);
+    return data;
 }
 
 export function getManagedPropertiesForOwner(ownerEmail: string) {
@@ -144,7 +148,11 @@ export function getManagedPropertySummaries() {
 
 export function toManagedPropertyDetail(property: ManagedProperty) {
     const images = uniqueStrings([property.image, ...property.galleryImages]);
-    const amenities = buildAmenityList(property);
+    const amenities = uniqueStrings(property.features).map((label) => ({
+        icon: '✓',
+        label,
+        available: true,
+    }));
 
     return {
         id: property.id,
@@ -172,60 +180,49 @@ export function toManagedPropertyDetail(property: ManagedProperty) {
         amenities,
         occupiedDays: [] as number[],
         reviewsList: [] as { name: string; date: string; rating: number; color: string; text: string }[],
-        nearby: buildNearbyList(property),
+        nearby: [
+            { icon: '📍', name: property.address, dist: 'La locatie' },
+            { icon: '🏙️', name: `Centru ${property.city}`, dist: '1.2 km' },
+            { icon: '🛒', name: 'Supermarket', dist: '700 m' },
+            { icon: '🍽️', name: 'Restaurant', dist: '450 m' },
+        ],
     };
 }
 
-export function saveManagedProperty(
-    property: Omit<ManagedProperty, 'id' | 'createdAt' | 'updatedAt'> & { id?: number }
+export async function saveManagedProperty(
+    property: Omit<ManagedProperty, 'id' | 'createdAt' | 'updatedAt'> & { id?: number },
 ) {
-    const properties = readManagedProperties();
-    const now = new Date().toISOString();
+    try {
+        const response = property.id
+            ? await getApiClient().put<ManagedProperty>(`/properties/${property.id}`, property)
+            : await getApiClient().post<ManagedProperty>('/properties', property);
 
-    if (property.id) {
-        const nextProperties = properties.map((item) =>
-            item.id === property.id
-                ? {
-                    ...item,
-                    ...property,
-                    badge: property.badge || undefined,
-                    updatedAt: now,
-                }
-                : item
-        );
-
-        writeManagedProperties(nextProperties);
-        return nextProperties.find((item) => item.id === property.id) ?? null;
+        const current = readManagedProperties().filter((item) => item.id !== response.data.id);
+        writeManagedProperties([...current, response.data]);
+        return response.data;
+    } catch {
+        return null;
     }
-
-    const nextId = Math.max(
-        DEFAULT_MAX_PROPERTY_ID,
-        ...properties.map((item) => item.id)
-    ) + 1;
-
-    const createdProperty: ManagedProperty = {
-        ...property,
-        id: nextId,
-        badge: property.badge || undefined,
-        createdAt: now,
-        updatedAt: now,
-    };
-
-    writeManagedProperties([...properties, createdProperty]);
-    return createdProperty;
 }
 
-export function deleteManagedProperty(id: number, ownerEmail: string) {
-    const nextProperties = readManagedProperties().filter(
-        (property) => !(property.id === id && property.ownerEmail === ownerEmail)
-    );
-    writeManagedProperties(nextProperties);
+export async function deleteManagedProperty(id: number, ownerEmail: string) {
+    try {
+        await getApiClient().delete(`/properties/${id}`, {
+            params: { ownerEmail },
+        });
+
+        const nextProperties = readManagedProperties().filter((property) => property.id !== id);
+        writeManagedProperties(nextProperties);
+        return true;
+    } catch {
+        return false;
+    }
 }
 
-export function reassignManagedPropertiesOwner(
+export async function reassignManagedPropertiesOwner(
     previousEmail: string,
     nextEmail: string,
-    nextHost: string
+    nextHost: string,
 ) {
     const nextProperties = readManagedProperties().map((property) =>
         property.ownerEmail === previousEmail
@@ -235,15 +232,21 @@ export function reassignManagedPropertiesOwner(
                 host: nextHost,
                 updatedAt: new Date().toISOString(),
             }
-            : property
+            : property,
     );
 
     writeManagedProperties(nextProperties);
+    await refreshManagedProperties();
 }
 
-export function deleteManagedPropertiesForOwner(ownerEmail: string) {
-    const nextProperties = readManagedProperties().filter(
-        (property) => property.ownerEmail !== ownerEmail
-    );
-    writeManagedProperties(nextProperties);
+export async function deleteManagedPropertiesForOwner(ownerEmail: string) {
+    const deletions = readManagedProperties()
+        .filter((property) => property.ownerEmail === ownerEmail)
+        .map((property) => deleteManagedProperty(property.id, ownerEmail));
+
+    await Promise.all(deletions);
+}
+
+export function getManagedPropertiesErrorMessage(error: unknown) {
+    return extractError(error, 'Nu am putut sincroniza proprietatile.');
 }
