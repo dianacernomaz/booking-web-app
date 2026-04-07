@@ -1,24 +1,25 @@
-using MyProject.BusinessLayer.Services;
+using MyProject.BusinessLayer.Infrastructure;
+using MyProject.BusinessLayer.Interfaces;
+using MyProject.BusinessLayer.Structure;
 
 namespace MyProject.BusinessLayer;
 
-public interface IBusinessLogic
+public sealed class BusinessLogic
 {
-    IAuthService Auth { get; }
+    private static readonly InMemoryAppStore SharedStore = new();
 
-    IPropertyService Properties { get; }
+    public IAuthAction AuthAction()
+    {
+        return new AuthActionExecution(SharedStore);
+    }
 
-    IBookingService Bookings { get; }
-}
+    public IPropertyAction PropertyAction()
+    {
+        return new PropertyActionExecution(SharedStore);
+    }
 
-public sealed class BusinessLogic(
-    IAuthService auth,
-    IPropertyService properties,
-    IBookingService bookings) : IBusinessLogic
-{
-    public IAuthService Auth { get; } = auth;
-
-    public IPropertyService Properties { get; } = properties;
-
-    public IBookingService Bookings { get; } = bookings;
+    public IBookingAction BookingAction()
+    {
+        return new BookingActionExecution(SharedStore);
+    }
 }

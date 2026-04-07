@@ -1,0 +1,12 @@
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\backend\MyProject.Domain\bin\Debug\net8.0\MyProject.Domain.deps.json
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\backend\MyProject.Domain\bin\Debug\net8.0\MyProject.Domain.dll
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\backend\MyProject.Domain\bin\Debug\net8.0\MyProject.Domain.pdb
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\backend\MyProject.Domain\obj\Debug\net8.0\MyProject.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\backend\MyProject.Domain\obj\Debug\net8.0\MyProject.Domain.AssemblyInfoInputs.cache
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\backend\MyProject.Domain\obj\Debug\net8.0\MyProject.Domain.AssemblyInfo.cs
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\backend\MyProject.Domain\obj\Debug\net8.0\MyProject.Domain.csproj.CoreCompileInputs.cache
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\backend\MyProject.Domain\obj\Debug\net8.0\MyProject.Domain.sourcelink.json
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\backend\MyProject.Domain\obj\Debug\net8.0\MyProject.Domain.dll
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\backend\MyProject.Domain\obj\Debug\net8.0\refint\MyProject.Domain.dll
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\backend\MyProject.Domain\obj\Debug\net8.0\MyProject.Domain.pdb
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\backend\MyProject.Domain\obj\Debug\net8.0\ref\MyProject.Domain.dll

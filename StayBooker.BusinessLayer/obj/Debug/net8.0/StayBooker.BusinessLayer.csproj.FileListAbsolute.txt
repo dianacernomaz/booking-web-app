@@ -1,0 +1,16 @@
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\StayBooker.BusinessLayer\obj\Debug\net8.0\StayBooker.BusinessLayer.csproj.AssemblyReference.cache
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\StayBooker.BusinessLayer\obj\Debug\net8.0\StayBooker.BusinessLayer.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\StayBooker.BusinessLayer\obj\Debug\net8.0\StayBooker.BusinessLayer.AssemblyInfoInputs.cache
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\StayBooker.BusinessLayer\obj\Debug\net8.0\StayBooker.BusinessLayer.AssemblyInfo.cs
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\StayBooker.BusinessLayer\obj\Debug\net8.0\StayBooker.BusinessLayer.csproj.CoreCompileInputs.cache
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\StayBooker.BusinessLayer\obj\Debug\net8.0\StayBooker.BusinessLayer.sourcelink.json
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\StayBooker.BusinessLayer\bin\Debug\net8.0\StayBooker.BusinessLayer.deps.json
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\StayBooker.BusinessLayer\bin\Debug\net8.0\StayBooker.BusinessLayer.dll
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\StayBooker.BusinessLayer\bin\Debug\net8.0\StayBooker.BusinessLayer.pdb
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\StayBooker.BusinessLayer\bin\Debug\net8.0\StayBooker.Domain.dll
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\StayBooker.BusinessLayer\bin\Debug\net8.0\StayBooker.Domain.pdb
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\StayBooker.BusinessLayer\obj\Debug\net8.0\StayBook.89EC2CC3.Up2Date
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\StayBooker.BusinessLayer\obj\Debug\net8.0\StayBooker.BusinessLayer.dll
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\StayBooker.BusinessLayer\obj\Debug\net8.0\refint\StayBooker.BusinessLayer.dll
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\StayBooker.BusinessLayer\obj\Debug\net8.0\StayBooker.BusinessLayer.pdb
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\StayBooker.BusinessLayer\obj\Debug\net8.0\ref\StayBooker.BusinessLayer.dll

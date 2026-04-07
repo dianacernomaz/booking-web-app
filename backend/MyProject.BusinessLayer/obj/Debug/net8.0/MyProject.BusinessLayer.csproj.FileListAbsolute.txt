@@ -1,0 +1,16 @@
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\backend\MyProject.BusinessLayer\obj\Debug\net8.0\MyProject.BusinessLayer.csproj.AssemblyReference.cache
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\backend\MyProject.BusinessLayer\obj\Debug\net8.0\MyProject.BusinessLayer.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\backend\MyProject.BusinessLayer\obj\Debug\net8.0\MyProject.BusinessLayer.AssemblyInfoInputs.cache
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\backend\MyProject.BusinessLayer\obj\Debug\net8.0\MyProject.BusinessLayer.AssemblyInfo.cs
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\backend\MyProject.BusinessLayer\obj\Debug\net8.0\MyProject.BusinessLayer.csproj.CoreCompileInputs.cache
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\backend\MyProject.BusinessLayer\obj\Debug\net8.0\MyProject.BusinessLayer.sourcelink.json
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\backend\MyProject.BusinessLayer\bin\Debug\net8.0\MyProject.BusinessLayer.deps.json
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\backend\MyProject.BusinessLayer\bin\Debug\net8.0\MyProject.BusinessLayer.dll
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\backend\MyProject.BusinessLayer\bin\Debug\net8.0\MyProject.BusinessLayer.pdb
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\backend\MyProject.BusinessLayer\bin\Debug\net8.0\MyProject.Domain.dll
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\backend\MyProject.BusinessLayer\bin\Debug\net8.0\MyProject.Domain.pdb
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\backend\MyProject.BusinessLayer\obj\Debug\net8.0\MyProjec.B34B1478.Up2Date
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\backend\MyProject.BusinessLayer\obj\Debug\net8.0\MyProject.BusinessLayer.dll
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\backend\MyProject.BusinessLayer\obj\Debug\net8.0\refint\MyProject.BusinessLayer.dll
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\backend\MyProject.BusinessLayer\obj\Debug\net8.0\MyProject.BusinessLayer.pdb
+C:\Users\vadim\Desktop\Project_Reserve\booking-web-app\backend\MyProject.BusinessLayer\obj\Debug\net8.0\ref\MyProject.BusinessLayer.dll
