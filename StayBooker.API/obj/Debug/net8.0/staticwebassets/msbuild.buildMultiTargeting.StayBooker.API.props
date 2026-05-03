@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\build\StayBooker.API.props" />
-</Project>

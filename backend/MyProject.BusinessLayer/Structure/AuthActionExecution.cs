@@ -1,22 +1,56 @@
-using MyProject.BusinessLayer.Common;
 using MyProject.BusinessLayer.Core;
-using MyProject.BusinessLayer.DTOs;
-using MyProject.BusinessLayer.Infrastructure;
 using MyProject.BusinessLayer.Interfaces;
+using MyProject.Domain.Models.Responses;
+using MyProject.Domain.Models.User;
+using Microsoft.Extensions.Configuration;
+using MyProject.DataAccess;
 
-namespace MyProject.BusinessLayer.Structure;
-
-public sealed class AuthActionExecution(InMemoryAppStore store) : AuthActions(store), IAuthAction
+namespace MyProject.BusinessLayer.Structure
 {
-    public ServiceResult<SessionUserDto> LoginAction(LoginRequestDto request) => LoginExecution(request);
+    public class AuthActionExecution : AuthActions, IAuthAction
+    {
+        public AuthActionExecution()
+        {
+        }
 
-    public ServiceResult<SessionUserDto> RegisterAction(RegisterRequestDto request) => RegisterExecution(request);
+        public ActionResponse<SessionUserDto> LoginAction(LoginRequestDto request)
+        {
+            return LoginActionExecution(request);
+        }
 
-    public ServiceResult<StoredUserDto> GetCurrentUserAction(string email) => GetCurrentUserExecution(email);
+        public ActionResponse<SessionUserDto> RegisterAction(RegisterRequestDto request)
+        {
+            return RegisterActionExecution(request);
+        }
 
-    public ServiceResult<StoredUserDto> UpdateProfileAction(UpdateUserProfileRequestDto request) => UpdateProfileExecution(request);
+        public StoredUserDto? GetCurrentUserAction(string email)
+        {
+            return GetCurrentUserActionExecution(email);
+        }
 
-    public ServiceResult ChangePasswordAction(ChangePasswordRequestDto request) => ChangePasswordExecution(request);
+        public ActionResponse<StoredUserDto> UpdateProfileAction(UpdateUserProfileRequestDto request)
+        {
+            return UpdateProfileActionExecution(request);
+        }
 
-    public ServiceResult DeleteUserAction(string email) => DeleteUserExecution(email);
+        public ActionResponse ChangePasswordAction(ChangePasswordRequestDto request)
+        {
+            return ChangePasswordActionExecution(request);
+        }
+
+        public List<StoredUserDto> GetAllUsersAction()
+        {
+            return GetAllUsersActionExecution();
+        }
+
+        public ActionResponse UpdateUserRoleAction(string email, string role)
+        {
+            return UpdateUserRoleActionExecution(email, role);
+        }
+
+        public ActionResponse DeleteUserAction(string email)
+        {
+            return DeleteUserActionExecution(email);
+        }
+    }
 }

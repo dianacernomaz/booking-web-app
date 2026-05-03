@@ -1,167 +1,297 @@
-using MyProject.BusinessLayer.Common;
-using MyProject.BusinessLayer.DTOs;
-using MyProject.BusinessLayer.Infrastructure;
+using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using MyProject.DataAccess;
+using MyProject.DataAccess.Context;
+using MyProject.Domain.Entities;
+using MyProject.Domain.Models.Responses;
+using MyProject.Domain.Models.User;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
-namespace MyProject.BusinessLayer.Core;
-
-public class AuthActions(InMemoryAppStore store)
+namespace MyProject.BusinessLayer.Core
 {
-    protected ServiceResult<SessionUserDto> LoginExecution(LoginRequestDto request)
+    public class AuthActions
     {
-        var normalizedEmail = NormalizeEmail(request.Email);
+        private readonly IMapper _mapper;
 
-        lock (store.SyncRoot)
+        public AuthActions()
         {
-            var user = store.Users.FirstOrDefault(candidate =>
-                string.Equals(candidate.Email, normalizedEmail, StringComparison.OrdinalIgnoreCase) &&
-                candidate.Password == request.Password);
-
-            return user is null
-                ? ServiceResult<SessionUserDto>.Failure(ServiceErrorType.Unauthorized, "Email sau parola incorecta.")
-                : ServiceResult<SessionUserDto>.Success(Mappers.ToSession(user));
-        }
-    }
-
-    protected ServiceResult<SessionUserDto> RegisterExecution(RegisterRequestDto request)
-    {
-        var normalizedEmail = NormalizeEmail(request.Email);
-        if (string.IsNullOrWhiteSpace(request.FullName) || string.IsNullOrWhiteSpace(normalizedEmail))
-        {
-            return ServiceResult<SessionUserDto>.Failure(ServiceErrorType.Validation, "Full name si email sunt obligatorii.");
+            _mapper = BusinessLogic.Mapper;
         }
 
-        lock (store.SyncRoot)
+        internal ActionResponse<SessionUserDto> LoginActionExecution(LoginRequestDto request)
         {
-            if (store.Users.Any(user => string.Equals(user.Email, normalizedEmail, StringComparison.OrdinalIgnoreCase)))
+            var normalizedEmail = NormalizeEmail(request.Email);
+            using (var db = new UserContext())
             {
-                return ServiceResult<SessionUserDto>.Failure(ServiceErrorType.Conflict, "Exista deja un cont cu acest email.");
+                var user = db.Users.FirstOrDefault(candidate => candidate.Email == normalizedEmail);
+                if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
+                {
+                    return Failed<SessionUserDto>(401, "Email sau parola incorecta.");
+                }
+
+                var response = _mapper.Map<SessionUserDto>(user);
+                response.Token = GenerateJwtToken(user);
+                return Success(response);
+            }
+        }
+
+        internal ActionResponse<SessionUserDto> RegisterActionExecution(RegisterRequestDto request)
+        {
+            var normalizedEmail = NormalizeEmail(request.Email);
+            if (string.IsNullOrWhiteSpace(request.FullName) ||
+                string.IsNullOrWhiteSpace(normalizedEmail) ||
+                string.IsNullOrWhiteSpace(request.Password))
+            {
+                return Failed<SessionUserDto>(400, "Full name, email si parola sunt obligatorii.");
             }
 
-            var user = new Domain.Entities.UserEntity
+            using (var db = new UserContext())
             {
-                FullName = request.FullName.Trim(),
-                Email = normalizedEmail,
-                Phone = request.Phone.Trim(),
-                BirthDate = request.BirthDate.Trim(),
-                Password = request.Password,
-                Role = "user"
+                var user = db.Users.FirstOrDefault(candidate => candidate.Email == normalizedEmail);
+                if (user != null)
+                {
+                    return Failed<SessionUserDto>(409, "Exista deja un cont cu acest email.");
+                }
+
+                user = new UserData
+                {
+                    FullName = request.FullName.Trim(),
+                    Email = normalizedEmail,
+                    Phone = (request.Phone ?? string.Empty).Trim(),
+                    BirthDate = (request.BirthDate ?? string.Empty).Trim(),
+                    Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                    Role = "user"
+                };
+
+                try
+                {
+                    db.Users.Add(user);
+                    db.SaveChanges();
+
+                    return Success(_mapper.Map<SessionUserDto>(user), "Cont creat cu succes.");
+                }
+                catch (DbUpdateException)
+                {
+                    return Failed<SessionUserDto>(409, "Exista deja un cont cu acest email.");
+                }
+            }
+        }
+
+        internal StoredUserDto? GetCurrentUserActionExecution(string email)
+        {
+            var normalizedEmail = NormalizeEmail(email);
+            using (var db = new UserContext())
+            {
+                var user = db.Users.FirstOrDefault(candidate => candidate.Email == normalizedEmail);
+
+                if (user == null)
+                {
+                    return null;
+                }
+
+                return _mapper.Map<StoredUserDto>(user);
+            }
+        }
+
+        internal ActionResponse<StoredUserDto> UpdateProfileActionExecution(UpdateUserProfileRequestDto request)
+        {
+            var currentEmail = NormalizeEmail(request.CurrentEmail);
+            var nextEmail = NormalizeEmail(request.Email);
+            using (var db = new UserContext())
+            {
+                var user = db.Users
+                    .Include(candidate => candidate.Properties)
+                    .FirstOrDefault(candidate => candidate.Email == currentEmail);
+
+                if (user == null)
+                {
+                    return Failed<StoredUserDto>(404, "Nu exista utilizator autentificat.");
+                }
+
+                var duplicate = db.Users.FirstOrDefault(candidate =>
+                    candidate.Email == nextEmail &&
+                    candidate.Id != user.Id);
+
+                if (duplicate != null)
+                {
+                    return Failed<StoredUserDto>(409, "Email-ul este deja folosit de alt cont.");
+                }
+
+                user.FullName = request.FullName.Trim();
+                user.Email = nextEmail;
+                user.Phone = (request.Phone ?? string.Empty).Trim();
+                user.City = (request.City ?? string.Empty).Trim();
+                user.Country = (request.Country ?? string.Empty).Trim();
+                user.Bio = (request.Bio ?? string.Empty).Trim();
+
+                foreach (var property in user.Properties)
+                {
+                    property.Host = user.FullName;
+                    property.UpdatedAt = DateTime.UtcNow;
+                }
+
+                try
+                {
+                    db.SaveChanges();
+                    return Success(_mapper.Map<StoredUserDto>(user), "Profil actualizat.");
+                }
+                catch (DbUpdateException)
+                {
+                    return Failed<StoredUserDto>(409, "Email-ul este deja folosit de alt cont.");
+                }
+            }
+        }
+
+        internal ActionResponse ChangePasswordActionExecution(ChangePasswordRequestDto request)
+        {
+            var normalizedEmail = NormalizeEmail(request.Email);
+            using (var db = new UserContext())
+            {
+                var user = db.Users.FirstOrDefault(candidate => candidate.Email == normalizedEmail);
+
+                if (user == null)
+                {
+                    return Failed(404, "Nu exista utilizator autentificat.");
+                }
+
+                if (!BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.Password))
+                {
+                    return Failed(401, "Parola curenta este incorecta.");
+                }
+
+                user.Password = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+                db.SaveChanges();
+                return Success("Parola a fost schimbata.");
+            }
+        }
+
+        internal List<StoredUserDto> GetAllUsersActionExecution()
+        {
+            using (var db = new UserContext())
+            {
+                var users = db.Users
+                    .AsNoTracking()
+                    .OrderBy(u => u.FullName)
+                    .ToList();
+
+                return _mapper.Map<List<StoredUserDto>>(users);
+            }
+        }
+
+        internal ActionResponse UpdateUserRoleActionExecution(string email, string role)
+        {
+            using (var db = new UserContext())
+            {
+                var user = db.Users.FirstOrDefault(u => u.Email == NormalizeEmail(email));
+                if (user == null) return Failed(404, "Utilizatorul nu a fost gasit.");
+
+                user.Role = role.ToLower();
+                db.SaveChanges();
+                return Success("Rolul utilizatorului a fost actualizat.");
+            }
+        }
+
+        internal ActionResponse DeleteUserActionExecution(string email)
+        {
+            var normalizedEmail = NormalizeEmail(email);
+            using (var db = new UserContext())
+            {
+                var user = db.Users
+                    .Include(candidate => candidate.Properties)
+                    .Include(candidate => candidate.Bookings)
+                    .FirstOrDefault(candidate => candidate.Email == normalizedEmail);
+
+                if (user == null)
+                {
+                    return Failed(404, "Utilizatorul nu a fost gasit.");
+                }
+
+                db.Bookings.RemoveRange(user.Bookings);
+                db.Properties.RemoveRange(user.Properties);
+                db.Users.Remove(user);
+                db.SaveChanges();
+                return Success("Utilizatorul a fost sters.");
+            }
+        }
+
+        private static ActionResponse Success(string message)
+        {
+            return new ActionResponse
+            {
+                IsSuccess = true,
+                Message = message,
+                StatusCode = 200
+            };
+        }
+
+        private static ActionResponse<T> Success<T>(T data, string? message = null)
+        {
+            return new ActionResponse<T>
+            {
+                IsSuccess = true,
+                Message = message,
+                StatusCode = 200,
+                Data = data
+            };
+        }
+
+        private static ActionResponse Failed(int statusCode, string message)
+        {
+            return new ActionResponse
+            {
+                IsSuccess = false,
+                Message = message,
+                StatusCode = statusCode
+            };
+        }
+
+        private static ActionResponse<T> Failed<T>(int statusCode, string message)
+        {
+            return new ActionResponse<T>
+            {
+                IsSuccess = false,
+                Message = message,
+                StatusCode = statusCode
+            };
+        }
+
+        private string GenerateJwtToken(UserData user)
+        {
+            var config = new ConfigurationBuilder()
+                .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+                .AddJsonFile("appsettings.json")
+                .Build();
+
+            var jwtSettings = config.GetSection("Jwt");
+            var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]!);
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.Name, user.Email),
+                    new Claim(ClaimTypes.Email, user.Email),
+                    new Claim(ClaimTypes.Role, user.Role),
+                    new Claim("fullName", user.FullName)
+                }),
+                Expires = DateTime.UtcNow.AddMinutes(double.Parse(jwtSettings["ExpiryMinutes"]!)),
+                Issuer = jwtSettings["Issuer"],
+                Audience = jwtSettings["Audience"],
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 
-            store.Users.Add(user);
-            return ServiceResult<SessionUserDto>.Success(Mappers.ToSession(user));
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
-    }
 
-    protected ServiceResult<StoredUserDto> GetCurrentUserExecution(string email)
-    {
-        var normalizedEmail = NormalizeEmail(email);
-        lock (store.SyncRoot)
+        private static string NormalizeEmail(string email)
         {
-            var user = store.Users.FirstOrDefault(candidate =>
-                string.Equals(candidate.Email, normalizedEmail, StringComparison.OrdinalIgnoreCase));
-
-            return user is null
-                ? ServiceResult<StoredUserDto>.Failure(ServiceErrorType.NotFound, "Utilizatorul nu a fost gasit.")
-                : ServiceResult<StoredUserDto>.Success(Mappers.ToStoredUser(user));
+            return (email ?? string.Empty).Trim().ToLowerInvariant();
         }
     }
-
-    protected ServiceResult<StoredUserDto> UpdateProfileExecution(UpdateUserProfileRequestDto request)
-    {
-        var currentEmail = NormalizeEmail(request.CurrentEmail);
-        var nextEmail = NormalizeEmail(request.Email);
-
-        lock (store.SyncRoot)
-        {
-            var user = store.Users.FirstOrDefault(candidate =>
-                string.Equals(candidate.Email, currentEmail, StringComparison.OrdinalIgnoreCase));
-
-            if (user is null)
-            {
-                return ServiceResult<StoredUserDto>.Failure(ServiceErrorType.NotFound, "Nu exista utilizator autentificat.");
-            }
-
-            var duplicate = store.Users.FirstOrDefault(candidate =>
-                string.Equals(candidate.Email, nextEmail, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(candidate.Email, currentEmail, StringComparison.OrdinalIgnoreCase));
-
-            if (duplicate is not null)
-            {
-                return ServiceResult<StoredUserDto>.Failure(ServiceErrorType.Conflict, "Email-ul este deja folosit de alt cont.");
-            }
-
-            user.FullName = request.FullName.Trim();
-            user.Email = nextEmail;
-            user.Phone = request.Phone.Trim();
-            user.City = request.City.Trim();
-            user.Country = request.Country.Trim();
-            user.Bio = request.Bio.Trim();
-
-            foreach (var property in store.Properties.Where(property =>
-                         string.Equals(property.OwnerEmail, currentEmail, StringComparison.OrdinalIgnoreCase)))
-            {
-                property.OwnerEmail = nextEmail;
-                property.Host = user.FullName;
-                property.UpdatedAt = DateTime.UtcNow;
-            }
-
-            foreach (var booking in store.Bookings.Where(booking =>
-                         string.Equals(booking.OwnerEmail, currentEmail, StringComparison.OrdinalIgnoreCase)))
-            {
-                booking.OwnerEmail = nextEmail;
-            }
-
-            return ServiceResult<StoredUserDto>.Success(Mappers.ToStoredUser(user));
-        }
-    }
-
-    protected ServiceResult ChangePasswordExecution(ChangePasswordRequestDto request)
-    {
-        var normalizedEmail = NormalizeEmail(request.Email);
-
-        lock (store.SyncRoot)
-        {
-            var user = store.Users.FirstOrDefault(candidate =>
-                string.Equals(candidate.Email, normalizedEmail, StringComparison.OrdinalIgnoreCase));
-
-            if (user is null)
-            {
-                return ServiceResult.Failure(ServiceErrorType.NotFound, "Nu exista utilizator autentificat.");
-            }
-
-            if (!string.Equals(user.Password, request.CurrentPassword, StringComparison.Ordinal))
-            {
-                return ServiceResult.Failure(ServiceErrorType.Unauthorized, "Parola curenta este incorecta.");
-            }
-
-            user.Password = request.NewPassword;
-            return ServiceResult.Success();
-        }
-    }
-
-    protected ServiceResult DeleteUserExecution(string email)
-    {
-        var normalizedEmail = NormalizeEmail(email);
-
-        lock (store.SyncRoot)
-        {
-            var user = store.Users.FirstOrDefault(candidate =>
-                string.Equals(candidate.Email, normalizedEmail, StringComparison.OrdinalIgnoreCase));
-
-            if (user is null)
-            {
-                return ServiceResult.Failure(ServiceErrorType.NotFound, "Utilizatorul nu a fost gasit.");
-            }
-
-            store.Users.Remove(user);
-            store.Properties.RemoveAll(property =>
-                string.Equals(property.OwnerEmail, normalizedEmail, StringComparison.OrdinalIgnoreCase));
-            store.Bookings.RemoveAll(booking =>
-                string.Equals(booking.OwnerEmail, normalizedEmail, StringComparison.OrdinalIgnoreCase));
-
-            return ServiceResult.Success();
-        }
-    }
-
-    private static string NormalizeEmail(string email) => email.Trim().ToLowerInvariant();
 }

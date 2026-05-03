@@ -1,19 +1,24 @@
-using MyProject.BusinessLayer.Common;
-using MyProject.BusinessLayer.DTOs;
+using MyProject.Domain.Models.User;
+using MyProject.Domain.Models.Responses;
 
-namespace MyProject.BusinessLayer.Interfaces;
-
-public interface IAuthAction
+namespace MyProject.BusinessLayer.Interfaces
 {
-    ServiceResult<SessionUserDto> LoginAction(LoginRequestDto request);
+    public interface IAuthAction
+    {
+        ActionResponse<SessionUserDto> LoginAction(LoginRequestDto request);
 
-    ServiceResult<SessionUserDto> RegisterAction(RegisterRequestDto request);
+        ActionResponse<SessionUserDto> RegisterAction(RegisterRequestDto request);
 
-    ServiceResult<StoredUserDto> GetCurrentUserAction(string email);
+        StoredUserDto? GetCurrentUserAction(string email);
 
-    ServiceResult<StoredUserDto> UpdateProfileAction(UpdateUserProfileRequestDto request);
+        ActionResponse<StoredUserDto> UpdateProfileAction(UpdateUserProfileRequestDto request);
 
-    ServiceResult ChangePasswordAction(ChangePasswordRequestDto request);
+        ActionResponse ChangePasswordAction(ChangePasswordRequestDto request);
 
-    ServiceResult DeleteUserAction(string email);
+        List<StoredUserDto> GetAllUsersAction();
+
+        ActionResponse UpdateUserRoleAction(string email, string role);
+
+        ActionResponse DeleteUserAction(string email);
+    }
 }

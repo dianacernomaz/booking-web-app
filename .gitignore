@@ -22,3 +22,14 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+/backend/MyProject.API/bin/
+/backend/MyProject.BusinessLayer/bin/
+/backend/MyProject.DataAccess/bin/
+/backend/MyProject.Domain/bin/
+/backend/MyProject.API/obj/
+/backend/MyProject.BusinessLayer/obj/
+/backend/MyProject.DataAccess/obj/
+/backend/MyProject.Domain/bin/
+/backend/MyProject.Domain/obj/
+/backend/MyProject.BusinessLayer/bin/
+/backend/MyProject.BusinessLayer/bin/

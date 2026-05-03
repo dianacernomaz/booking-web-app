@@ -1,25 +1,39 @@
-using MyProject.BusinessLayer.Infrastructure;
+using AutoMapper;
 using MyProject.BusinessLayer.Interfaces;
 using MyProject.BusinessLayer.Structure;
 
-namespace MyProject.BusinessLayer;
-
-public sealed class BusinessLogic
+namespace MyProject.BusinessLayer
 {
-    private static readonly InMemoryAppStore SharedStore = new();
-
-    public IAuthAction AuthAction()
+    public class BusinessLogic
     {
-        return new AuthActionExecution(SharedStore);
-    }
+        private static readonly IMapper _mapper;
 
-    public IPropertyAction PropertyAction()
-    {
-        return new PropertyActionExecution(SharedStore);
-    }
+        static BusinessLogic()
+        {
+            var config = new MapperConfiguration(cfg =>
+            {
+                cfg.AddProfile<MappingProfile>();
+            });
+            _mapper = config.CreateMapper();
+        }
 
-    public IBookingAction BookingAction()
-    {
-        return new BookingActionExecution(SharedStore);
+        public BusinessLogic() { }
+
+        public static IMapper Mapper => _mapper;
+
+        public IAuthAction AuthAction()
+        {
+            return new AuthActionExecution();
+        }
+
+        public IPropertyAction PropertyAction()
+        {
+            return new PropertyActionExecution();
+        }
+
+        public IBookingAction BookingAction()
+        {
+            return new BookingActionExecution();
+        }
     }
 }

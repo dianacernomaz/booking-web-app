@@ -1,82 +1,224 @@
-using MyProject.BusinessLayer.Common;
-using MyProject.BusinessLayer.DTOs;
-using MyProject.BusinessLayer.Infrastructure;
+using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using MyProject.DataAccess;
+using MyProject.DataAccess.Context;
 using MyProject.Domain.Entities;
+using MyProject.Domain.Models.Booking;
+using MyProject.Domain.Models.Responses;
 
-namespace MyProject.BusinessLayer.Core;
-
-public class BookingActions(InMemoryAppStore store)
+namespace MyProject.BusinessLayer.Core
 {
-    protected IReadOnlyCollection<BookingDto> GetByOwnerExecution(string ownerEmail)
+    public class BookingActions
     {
-        var normalizedEmail = NormalizeEmail(ownerEmail);
+        private readonly IMapper _mapper;
 
-        lock (store.SyncRoot)
+        public BookingActions()
         {
-            return store.Bookings
-                .Where(booking => string.Equals(booking.OwnerEmail, normalizedEmail, StringComparison.OrdinalIgnoreCase))
-                .OrderByDescending(booking => booking.CheckIn)
-                .Select(Mappers.ToBooking)
-                .ToArray();
-        }
-    }
-
-    protected ServiceResult<BookingDto> CreateExecution(CreateBookingRequestDto request)
-    {
-        if (string.IsNullOrWhiteSpace(request.OwnerEmail))
-        {
-            return ServiceResult<BookingDto>.Failure(ServiceErrorType.Validation, "Owner email este obligatoriu.");
+            _mapper = BusinessLogic.Mapper;
         }
 
-        lock (store.SyncRoot)
+        internal List<BookingDto> GetByOwnerActionExecution(string ownerEmail)
         {
-            var booking = new BookingEntity
+            var normalizedEmail = NormalizeEmail(ownerEmail);
+
+            using (var db = new BookingContext())
             {
-                Id = Guid.NewGuid().ToString(),
-                OwnerEmail = NormalizeEmail(request.OwnerEmail),
-                PropertyId = request.PropertyId,
-                PropertyTitle = request.PropertyTitle,
-                PropertyLocation = request.PropertyLocation,
-                PropertyImage = request.PropertyImage,
-                CheckIn = request.CheckIn,
-                CheckOut = request.CheckOut,
-                Guests = request.Guests,
-                Nights = request.Nights,
-                Total = request.Total,
-                Status = BookingStatusResolver.Resolve(request.CheckIn, request.CheckOut, null),
-                Code = request.Code,
-                CreatedAt = DateTime.UtcNow,
-                PaymentMethod = request.PaymentMethod,
-                PaymentStatus = request.PaymentStatus,
-                PaymentLabel = request.PaymentLabel,
-                PaymentLast4 = request.PaymentLast4,
-                PaidAt = DateTime.TryParse(request.PaidAt, out var paidAt) ? paidAt : null
-            };
+                var bookings = db.Bookings
+                    .AsNoTracking()
+                    .Include(booking => booking.User)
+                    .Where(booking => booking.User != null && booking.User.Email == normalizedEmail)
+                    .OrderByDescending(booking => booking.CheckIn)
+                    .ToList();
 
-            store.Bookings.Insert(0, booking);
-            return ServiceResult<BookingDto>.Success(Mappers.ToBooking(booking));
+                return _mapper.Map<List<BookingDto>>(bookings);
+            }
         }
-    }
 
-    protected ServiceResult CancelExecution(string id, string ownerEmail)
-    {
-        var normalizedEmail = NormalizeEmail(ownerEmail);
-
-        lock (store.SyncRoot)
+        internal List<BookingDto> GetByHostActionExecution(string hostEmail)
         {
-            var booking = store.Bookings.FirstOrDefault(item =>
-                string.Equals(item.Id, id, StringComparison.OrdinalIgnoreCase) &&
-                string.Equals(item.OwnerEmail, normalizedEmail, StringComparison.OrdinalIgnoreCase));
+            var normalizedEmail = NormalizeEmail(hostEmail);
 
-            if (booking is null)
+            using (var db = new BookingContext())
             {
-                return ServiceResult.Failure(ServiceErrorType.NotFound, "Rezervarea nu a fost gasita.");
+                var bookings = db.Bookings
+                    .AsNoTracking()
+                    .Include(booking => booking.User)
+                    .Include(booking => booking.Property)
+                    .ThenInclude(p => p.Owner)
+                    .Where(booking => booking.Property != null && booking.Property.Owner != null && booking.Property.Owner.Email == normalizedEmail)
+                    .OrderByDescending(booking => booking.CreatedAt)
+                    .ToList();
+
+                return _mapper.Map<List<BookingDto>>(bookings);
+            }
+        }
+
+        internal ActionResponse<BookingDto> CreateBookingActionExecution(CreateBookingRequestDto request)
+        {
+            if (string.IsNullOrWhiteSpace(request.OwnerEmail))
+            {
+                return Failed<BookingDto>(400, "Owner email este obligatoriu.");
             }
 
-            booking.Status = "cancelled";
-            return ServiceResult.Success();
+            var normalizedEmail = NormalizeEmail(request.OwnerEmail);
+            using (var db = new BookingContext())
+            {
+                var user = db.Users.FirstOrDefault(candidate => candidate.Email == normalizedEmail);
+                if (user == null)
+                {
+                    return Failed<BookingDto>(404, "Utilizatorul rezervarii nu a fost gasit.");
+                }
+
+                var property = db.Properties.FirstOrDefault(candidate => candidate.Id == request.PropertyId);
+                if (property == null)
+                {
+                    return Failed<BookingDto>(404, "Proprietatea nu a fost gasita.");
+                }
+
+                var booking = new BookingData
+                {
+                    Id = Guid.NewGuid().ToString("N"),
+                    UserId = user.Id,
+                    User = user,
+                    PropertyId = property.Id,
+                    Property = property,
+                    PropertyTitle = property.Title,
+                    PropertyLocation = BuildLocation(property.City, property.Country),
+                    PropertyImage = property.Image,
+                    CheckIn = request.CheckIn,
+                    CheckOut = request.CheckOut,
+                    Guests = request.Guests,
+                    Nights = request.Nights,
+                    Total = request.Total,
+                    Status = ResolveBookingStatus(request.CheckIn, request.CheckOut, null),
+                    Code = request.Code,
+                    CreatedAt = DateTime.UtcNow,
+                    PaymentMethod = request.PaymentMethod,
+                    PaymentStatus = request.PaymentStatus,
+                    PaymentLabel = request.PaymentLabel,
+                    PaymentLast4 = request.PaymentLast4,
+                    PaidAt = DateTime.TryParse(request.PaidAt, out var paidAt) ? paidAt : null
+                };
+
+                db.Bookings.Add(booking);
+                db.SaveChanges();
+                return Success(_mapper.Map<BookingDto>(booking), "Rezervare creata.");
+            }
+        }
+
+        internal ActionResponse CancelBookingActionExecution(string id, string ownerEmail)
+        {
+            var normalizedEmail = NormalizeEmail(ownerEmail);
+            using (var db = new BookingContext())
+            {
+                var booking = db.Bookings
+                    .Include(item => item.User)
+                    .FirstOrDefault(item =>
+                        item.Id == id &&
+                        item.User != null &&
+                        item.User.Email == normalizedEmail);
+
+                if (booking == null)
+                {
+                    return Failed(404, "Rezervarea nu a fost gasita.");
+                }
+
+                booking.Status = "cancelled";
+                db.SaveChanges();
+                return Success("Rezervarea a fost anulata.");
+            }
+        }
+
+        internal PlatformStatsDto GetPlatformStatsActionExecution()
+        {
+            using (var db = new BookingContext())
+            {
+                return new PlatformStatsDto
+                {
+                    TotalUsers = db.Users.Count(),
+                    TotalProperties = db.Properties.Count(),
+                    PendingProperties = db.Properties.Count(p => !p.IsApproved),
+                    TotalBookings = db.Bookings.Count(),
+                    TotalRevenue = db.Bookings.Where(b => b.Status != "cancelled").Sum(b => b.Total)
+                };
+            }
+        }
+
+        private static ActionResponse Success(string message)
+        {
+            return new ActionResponse
+            {
+                IsSuccess = true,
+                Message = message,
+                StatusCode = 200
+            };
+        }
+
+        private static ActionResponse<T> Success<T>(T data, string? message = null)
+        {
+            return new ActionResponse<T>
+            {
+                IsSuccess = true,
+                Message = message,
+                StatusCode = 200,
+                Data = data
+            };
+        }
+
+        private static ActionResponse Failed(int statusCode, string message)
+        {
+            return new ActionResponse
+            {
+                IsSuccess = false,
+                Message = message,
+                StatusCode = statusCode
+            };
+        }
+
+        private static ActionResponse<T> Failed<T>(int statusCode, string message)
+        {
+            return new ActionResponse<T>
+            {
+                IsSuccess = false,
+                Message = message,
+                StatusCode = statusCode
+            };
+        }
+
+        public static string ResolveBookingStatus(string checkIn, string checkOut, string? currentStatus)
+        {
+            if (string.Equals(currentStatus, "cancelled", StringComparison.OrdinalIgnoreCase))
+            {
+                return "cancelled";
+            }
+
+            if (!DateOnly.TryParse(checkIn, out var checkInDate) || !DateOnly.TryParse(checkOut, out var checkOutDate))
+            {
+                return string.IsNullOrWhiteSpace(currentStatus) ? "upcoming" : currentStatus;
+            }
+
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            if (today < checkInDate)
+            {
+                return "upcoming";
+            }
+
+            if (today >= checkOutDate)
+            {
+                return "completed";
+            }
+
+            return "active";
+        }
+
+        private static string NormalizeEmail(string email)
+        {
+            return (email ?? string.Empty).Trim().ToLowerInvariant();
+        }
+
+        private static string BuildLocation(string city, string country)
+        {
+            return string.Join(", ", new[] { city, country }.Where(value => !string.IsNullOrWhiteSpace(value)));
         }
     }
-
-    private static string NormalizeEmail(string email) => email.Trim().ToLowerInvariant();
 }

@@ -1,22 +1,68 @@
-using MyProject.BusinessLayer.Common;
 using MyProject.BusinessLayer.Core;
-using MyProject.BusinessLayer.DTOs;
-using MyProject.BusinessLayer.Infrastructure;
 using MyProject.BusinessLayer.Interfaces;
+using MyProject.Domain.Models.Property;
+using MyProject.DataAccess;
+using MyProject.Domain.Models.Responses;
 
-namespace MyProject.BusinessLayer.Structure;
-
-public sealed class PropertyActionExecution(InMemoryAppStore store) : PropertyActions(store), IPropertyAction
+namespace MyProject.BusinessLayer.Structure
 {
-    public IReadOnlyCollection<PropertySummaryDto> GetAllSummariesAction() => GetAllSummariesExecution();
+    public class PropertyActionExecution : PropertyActions, IPropertyAction
+    {
+        public PropertyActionExecution() { }
 
-    public ServiceResult<PropertyDetailDto> GetByIdAction(int id) => GetByIdExecution(id);
+        public List<PropertySummaryDto> GetAllPropertiesAction()
+        {
+            return GetAllPropertiesActionExecution();
+        }
 
-    public IReadOnlyCollection<ManagedPropertyDto> GetByOwnerAction(string ownerEmail) => GetByOwnerExecution(ownerEmail);
+        public PropertyDetailDto? GetByIdAction(int id)
+        {
+            return GetByIdActionExecution(id);
+        }
 
-    public ServiceResult<ManagedPropertyDto> CreateAction(UpsertPropertyRequestDto request) => CreateExecution(request);
+        public List<ManagedPropertyDto> GetByOwnerAction(string ownerEmail)
+        {
+            return GetByOwnerActionExecution(ownerEmail);
+        }
 
-    public ServiceResult<ManagedPropertyDto> UpdateAction(int id, UpsertPropertyRequestDto request) => UpdateExecution(id, request);
+        public ActionResponse<ManagedPropertyDto> CreateAction(UpsertPropertyRequestDto request)
+        {
+            return CreatePropertyActionExecution(request);
+        }
 
-    public ServiceResult DeleteAction(int id, string ownerEmail) => DeleteExecution(id, ownerEmail);
+        public ActionResponse<ManagedPropertyDto> UpdateAction(int id, UpsertPropertyRequestDto request)
+        {
+            return UpdatePropertyActionExecution(id, request);
+        }
+
+        public List<PropertySummaryDto> SearchPropertiesAction(PropertySearchRequestDto request)
+        {
+            return SearchPropertiesActionExecution(request);
+        }
+
+        public List<ManagedPropertyDto> GetAllForAdminAction()
+        {
+            return GetAllForAdminActionExecution();
+        }
+
+        public ActionResponse ApproveAction(int id)
+        {
+            return ApprovePropertyActionExecution(id);
+        }
+
+        public ActionResponse RejectAction(int id)
+        {
+            return RejectPropertyActionExecution(id);
+        }
+
+        public ActionResponse UpdateAvailabilityAction(int id, List<int> occupiedDays)
+        {
+            return UpdateAvailabilityActionExecution(id, occupiedDays);
+        }
+
+        public ActionResponse DeleteAction(int id, string ownerEmail)
+        {
+            return DeletePropertyActionExecution(id, ownerEmail);
+        }
+    }
 }
