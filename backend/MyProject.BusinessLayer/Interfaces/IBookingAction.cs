@@ -1,13 +1,18 @@
-using MyProject.BusinessLayer.Common;
-using MyProject.BusinessLayer.DTOs;
+using MyProject.Domain.Models.Booking;
+using MyProject.Domain.Models.Responses;
 
-namespace MyProject.BusinessLayer.Interfaces;
-
-public interface IBookingAction
+namespace MyProject.BusinessLayer.Interfaces
 {
-    IReadOnlyCollection<BookingDto> GetByOwnerAction(string ownerEmail);
+    public interface IBookingAction
+    {
+        List<BookingDto> GetByOwnerAction(string ownerEmail);
 
-    ServiceResult<BookingDto> CreateAction(CreateBookingRequestDto request);
+        List<BookingDto> GetByHostAction(string hostEmail);
 
-    ServiceResult CancelAction(string id, string ownerEmail);
+        ActionResponse<BookingDto> CreateAction(CreateBookingRequestDto request);
+
+        ActionResponse CancelAction(string id, string ownerEmail);
+
+        PlatformStatsDto GetPlatformStatsAction();
+    }
 }

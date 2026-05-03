@@ -1,16 +1,40 @@
-using MyProject.BusinessLayer.Common;
 using MyProject.BusinessLayer.Core;
-using MyProject.BusinessLayer.DTOs;
-using MyProject.BusinessLayer.Infrastructure;
 using MyProject.BusinessLayer.Interfaces;
+using MyProject.Domain.Models.Booking;
+using MyProject.Domain.Models.Responses;
+using MyProject.DataAccess;
 
-namespace MyProject.BusinessLayer.Structure;
-
-public sealed class BookingActionExecution(InMemoryAppStore store) : BookingActions(store), IBookingAction
+namespace MyProject.BusinessLayer.Structure
 {
-    public IReadOnlyCollection<BookingDto> GetByOwnerAction(string ownerEmail) => GetByOwnerExecution(ownerEmail);
+    public class BookingActionExecution : BookingActions, IBookingAction
+    {
+        public BookingActionExecution()
+        {
+        }
 
-    public ServiceResult<BookingDto> CreateAction(CreateBookingRequestDto request) => CreateExecution(request);
+        public List<BookingDto> GetByOwnerAction(string ownerEmail)
+        {
+            return GetByOwnerActionExecution(ownerEmail);
+        }
 
-    public ServiceResult CancelAction(string id, string ownerEmail) => CancelExecution(id, ownerEmail);
+        public List<BookingDto> GetByHostAction(string hostEmail)
+        {
+            return GetByHostActionExecution(hostEmail);
+        }
+
+        public ActionResponse<BookingDto> CreateAction(CreateBookingRequestDto request)
+        {
+            return CreateBookingActionExecution(request);
+        }
+
+        public ActionResponse CancelAction(string id, string ownerEmail)
+        {
+            return CancelBookingActionExecution(id, ownerEmail);
+        }
+
+        public PlatformStatsDto GetPlatformStatsAction()
+        {
+            return GetPlatformStatsActionExecution();
+        }
+    }
 }

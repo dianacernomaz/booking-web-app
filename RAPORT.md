@@ -1,17 +1,21 @@
 # Raport implementare laborator
 
-## 1. Structura backend .NET pe 3 straturi
+## 1. Structura backend .NET pe 4 straturi
 
-Am creat in folderul [backend/MyProject.slnx](/C:/Users/Asus/Desktop/booking-web-app/backend/MyProject.slnx) o solutie .NET impartita in:
+Am creat in folderul [backend/MyProject.sln](/C:/Users/Asus/Desktop/booking-web-app/backend/MyProject.sln) o solutie .NET impartita in:
 
 - [MyProject.API](/C:/Users/Asus/Desktop/booking-web-app/backend/MyProject.API)
 - [MyProject.BusinessLayer](/C:/Users/Asus/Desktop/booking-web-app/backend/MyProject.BusinessLayer)
+- [MyProject.DataAccess](/C:/Users/Asus/Desktop/booking-web-app/backend/MyProject.DataAccess)
 - [MyProject.Domain](/C:/Users/Asus/Desktop/booking-web-app/backend/MyProject.Domain)
 
 Referintele configurate sunt:
 
+- `MyProject.DataAccess -> MyProject.Domain`
+- `MyProject.BusinessLayer -> MyProject.DataAccess`
 - `MyProject.BusinessLayer -> MyProject.Domain`
 - `MyProject.API -> MyProject.BusinessLayer`
+- `MyProject.API -> MyProject.DataAccess`
 - `MyProject.API -> MyProject.Domain`
 
 ## 2. Implementarea BusinessLayer
@@ -133,5 +137,5 @@ URL-uri utile:
 
 Au fost verificate cu succes:
 
-- `dotnet build backend/MyProject.slnx`
+- `dotnet build backend/MyProject.sln`
 - `npm run build` in `frontend`

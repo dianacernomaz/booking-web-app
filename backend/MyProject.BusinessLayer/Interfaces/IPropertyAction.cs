@@ -1,19 +1,30 @@
-using MyProject.BusinessLayer.Common;
-using MyProject.BusinessLayer.DTOs;
+using MyProject.Domain.Models.Property;
+using MyProject.Domain.Models.Responses;
 
-namespace MyProject.BusinessLayer.Interfaces;
-
-public interface IPropertyAction
+namespace MyProject.BusinessLayer.Interfaces
 {
-    IReadOnlyCollection<PropertySummaryDto> GetAllSummariesAction();
+    public interface IPropertyAction
+    {
+        List<PropertySummaryDto> GetAllPropertiesAction();
 
-    ServiceResult<PropertyDetailDto> GetByIdAction(int id);
+        PropertyDetailDto? GetByIdAction(int id);
 
-    IReadOnlyCollection<ManagedPropertyDto> GetByOwnerAction(string ownerEmail);
+        List<ManagedPropertyDto> GetByOwnerAction(string ownerEmail);
 
-    ServiceResult<ManagedPropertyDto> CreateAction(UpsertPropertyRequestDto request);
+        ActionResponse<ManagedPropertyDto> CreateAction(UpsertPropertyRequestDto request);
 
-    ServiceResult<ManagedPropertyDto> UpdateAction(int id, UpsertPropertyRequestDto request);
+        ActionResponse<ManagedPropertyDto> UpdateAction(int id, UpsertPropertyRequestDto request);
 
-    ServiceResult DeleteAction(int id, string ownerEmail);
+        List<PropertySummaryDto> SearchPropertiesAction(PropertySearchRequestDto request);
+
+        List<ManagedPropertyDto> GetAllForAdminAction();
+
+        ActionResponse ApproveAction(int id);
+
+        ActionResponse RejectAction(int id);
+
+        ActionResponse UpdateAvailabilityAction(int id, List<int> occupiedDays);
+
+        ActionResponse DeleteAction(int id, string ownerEmail);
+    }
 }
