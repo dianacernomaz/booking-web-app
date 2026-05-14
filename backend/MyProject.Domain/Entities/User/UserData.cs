@@ -43,4 +43,6 @@ public sealed class UserData
     public List<PropertyData> Properties { get; set; } = [];
 
     public List<BookingData> Bookings { get; set; } = [];
+
+    public List<WishlistData> Wishlists { get; set; } = [];
 }

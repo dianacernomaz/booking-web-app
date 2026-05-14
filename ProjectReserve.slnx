@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/backend/">
+    <Project Path="backend/ProjectReserve.API/ProjectReserve.API.csproj" />
+    <Project Path="backend/ProjectReserve.BusinessLayer/ProjectReserve.BusinessLayer.csproj" />
+    <Project Path="backend/ProjectReserve.DataAccess/ProjectReserve.DataAccess.csproj" />
+    <Project Path="backend/ProjectReserve.Domain/ProjectReserve.Domain.csproj" />
+  </Folder>
+</Solution>

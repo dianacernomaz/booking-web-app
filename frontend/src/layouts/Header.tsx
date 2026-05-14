@@ -76,6 +76,9 @@ const Header: React.FC = () => {
                                 <button className="btn-sign-in" onClick={() => navigate('/bookings')}>
                                     📋 Rezervările mele
                                 </button>
+                                <button className="btn-sign-in" onClick={() => navigate('/wishlist')} style={{ color: '#ff385c' }}>
+                                    ❤️ Favorite
+                                </button>
                                 {session.role === 'admin' && (
                                     <button className="btn-sign-in" onClick={() => navigate('/admin')} style={{ color: '#febb02' }}>
                                         ⚙️ Admin

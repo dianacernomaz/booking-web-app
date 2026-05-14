@@ -14,6 +14,7 @@ public sealed class UserContext : DbContext
     public DbSet<AmenityData> Amenities => Set<AmenityData>();
     public DbSet<ReviewData> Reviews => Set<ReviewData>();
     public DbSet<NearbyPlaceData> NearbyPlaces => Set<NearbyPlaceData>();
+    public DbSet<WishlistData> Wishlists => Set<WishlistData>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -39,5 +40,12 @@ public sealed class UserContext : DbContext
         });
 
         modelBuilder.Entity<BookingData>(entity => { entity.HasOne(booking => booking.User).WithMany(user => user.Bookings).HasForeignKey(booking => booking.UserId).OnDelete(DeleteBehavior.NoAction); });
+
+        modelBuilder.Entity<WishlistData>(entity =>
+        {
+            entity.HasKey(w => w.Id);
+            entity.HasOne(w => w.User).WithMany(u => u.Wishlists).HasForeignKey(w => w.UserId).OnDelete(DeleteBehavior.NoAction);
+            entity.HasOne(w => w.Property).WithMany(p => p.WishlistedBy).HasForeignKey(w => w.PropertyId).OnDelete(DeleteBehavior.Cascade);
+        });
     }
 }

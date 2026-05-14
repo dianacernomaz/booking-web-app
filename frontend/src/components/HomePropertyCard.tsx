@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCurrency } from '../utils/currency';
 import type { ManagedPropertySummary } from '../types/managedProperties';
 import FeatureTag from './FeatureTag';
+import { authService } from '../auth/authService';
+import { wishlistService } from '../axios/wishlistService';
 
 interface HomePropertyCardProps {
     property: ManagedPropertySummary;
@@ -11,6 +13,22 @@ interface HomePropertyCardProps {
 const HomePropertyCard: React.FC<HomePropertyCardProps> = ({ property }) => {
     const navigate = useNavigate();
     const { formatPrice } = useCurrency();
+    const [isFavorite, setIsFavorite] = useState(property.isFavorite);
+
+    const handleFavoriteClick = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const session = authService.getSession();
+        if (!session?.email) {
+            navigate('/login');
+            return;
+        }
+        try {
+            await wishlistService.toggleWishlist(session.email, property.id);
+            setIsFavorite(!isFavorite);
+        } catch (error) {
+            console.error('Failed to toggle wishlist', error);
+        }
+    };
 
     return (
         <div
@@ -19,8 +37,27 @@ const HomePropertyCard: React.FC<HomePropertyCardProps> = ({ property }) => {
             style={{ cursor: 'pointer' }}
         >
             {property.badge && <span className="property-badge">{property.badge}</span>}
-            <div className="property-image">
+            <div className="property-image" style={{ position: 'relative' }}>
                 <img src={property.image} alt={property.title} />
+                <button 
+                    onClick={handleFavoriteClick}
+                    style={{ 
+                        position: 'absolute', 
+                        top: 12, 
+                        right: 12, 
+                        background: 'transparent',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '24px',
+                        textShadow: '0px 0px 4px rgba(0,0,0,0.5)',
+                        opacity: 0.9,
+                        transition: 'transform 0.2s',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.1)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+                >
+                    {isFavorite ? '❤️' : '🤍'}
+                </button>
             </div>
             <div className="property-info">
                 <h3>{property.title}</h3>

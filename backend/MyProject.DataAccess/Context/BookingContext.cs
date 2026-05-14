@@ -8,6 +8,7 @@ public sealed class BookingContext : DbContext
     public DbSet<BookingData> Bookings => Set<BookingData>();
     public DbSet<UserData> Users => Set<UserData>();
     public DbSet<PropertyData> Properties => Set<PropertyData>();
+    public DbSet<WishlistData> Wishlists => Set<WishlistData>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -50,6 +51,13 @@ public sealed class BookingContext : DbContext
                 .WithMany(property => property.Bookings)
                 .HasForeignKey(booking => booking.PropertyId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<WishlistData>(entity =>
+        {
+            entity.HasKey(w => w.Id);
+            entity.HasOne(w => w.User).WithMany(u => u.Wishlists).HasForeignKey(w => w.UserId).OnDelete(DeleteBehavior.NoAction);
+            entity.HasOne(w => w.Property).WithMany(p => p.WishlistedBy).HasForeignKey(w => w.PropertyId).OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

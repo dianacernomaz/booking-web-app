@@ -7,6 +7,7 @@ import PropertyDetail from "../pages/PropertyDetail";
 import MyProfile from "../pages/MyProfile";
 import MyBookings from "../pages/MyBookings";
 import MyProperties from "../pages/MyProperties";
+import Wishlist from "../pages/Wishlist";
 import AdminDashboard from "../pages/AdminDashboard";
 import Features from "../pages/Features";
 import About from "../pages/About";
@@ -23,6 +24,7 @@ export default function Router() {
             <Route path="/profile"      element={<MyProfile />} />
             <Route path="/bookings"     element={<MyBookings />} />
             <Route path="/my-properties" element={<MyProperties />} />
+            <Route path="/wishlist"     element={<Wishlist />} />
             <Route path="/admin"        element={<AdminDashboard />} />
             <Route path="/features"     element={<Features />} />
             <Route path="/about"        element={<About />} />
