@@ -219,5 +219,7 @@ namespace MyProject.Domain.Models.Property
         public decimal? MaxPrice { get; set; }
 
         public List<string>? Features { get; set; }
+
+        public string? UserEmail { get; set; }
     }
 }

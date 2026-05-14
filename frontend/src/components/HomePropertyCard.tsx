@@ -8,9 +8,10 @@ import { wishlistService } from '../axios/wishlistService';
 
 interface HomePropertyCardProps {
     property: ManagedPropertySummary;
+    onRemove?: (id: number) => void;
 }
 
-const HomePropertyCard: React.FC<HomePropertyCardProps> = ({ property }) => {
+const HomePropertyCard: React.FC<HomePropertyCardProps> = ({ property, onRemove }) => {
     const navigate = useNavigate();
     const { formatPrice } = useCurrency();
     const [isFavorite, setIsFavorite] = useState(property.isFavorite);
@@ -24,7 +25,11 @@ const HomePropertyCard: React.FC<HomePropertyCardProps> = ({ property }) => {
         }
         try {
             await wishlistService.toggleWishlist(session.email, property.id);
-            setIsFavorite(!isFavorite);
+            const nowFavorite = !isFavorite;
+            setIsFavorite(nowFavorite);
+            if (!nowFavorite && onRemove) {
+                onRemove(property.id);
+            }
         } catch (error) {
             console.error('Failed to toggle wishlist', error);
         }

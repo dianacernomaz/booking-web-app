@@ -17,7 +17,7 @@ namespace MyProject.BusinessLayer.Core
             _mapper = BusinessLogic.Mapper;
         }
 
-        internal List<PropertySummaryDto> GetAllPropertiesActionExecution()
+        internal List<PropertySummaryDto> GetAllPropertiesActionExecution(string? userEmail = null)
         {
             using (var db = new PropertyContext())
             {
@@ -26,7 +26,14 @@ namespace MyProject.BusinessLayer.Core
                     .OrderBy(property => property.Id)
                     .ToList();
 
-                return _mapper.Map<List<PropertySummaryDto>>(properties);
+                var dtos = _mapper.Map<List<PropertySummaryDto>>(properties);
+                if (!string.IsNullOrWhiteSpace(userEmail))
+                {
+                    var favoriteIds = GetFavoritePropertyIds(NormalizeEmail(userEmail));
+                    foreach (var dto in dtos)
+                        dto.IsFavorite = favoriteIds.Contains(dto.Id);
+                }
+                return dtos;
             }
         }
 
@@ -233,7 +240,14 @@ namespace MyProject.BusinessLayer.Core
                     .OrderByDescending(p => p.Rating)
                     .ToList();
 
-                return _mapper.Map<List<PropertySummaryDto>>(properties);
+                var dtos = _mapper.Map<List<PropertySummaryDto>>(properties);
+                if (!string.IsNullOrWhiteSpace(request.UserEmail))
+                {
+                    var favoriteIds = GetFavoritePropertyIds(NormalizeEmail(request.UserEmail));
+                    foreach (var dto in dtos)
+                        dto.IsFavorite = favoriteIds.Contains(dto.Id);
+                }
+                return dtos;
             }
         }
 
@@ -449,6 +463,18 @@ namespace MyProject.BusinessLayer.Core
         private static string NormalizeEmail(string email)
         {
             return (email ?? string.Empty).Trim().ToLowerInvariant();
+        }
+
+        private static HashSet<int> GetFavoritePropertyIds(string normalizedEmail)
+        {
+            if (string.IsNullOrWhiteSpace(normalizedEmail)) return new HashSet<int>();
+            using var userDb = new UserContext();
+            var user = userDb.Users.FirstOrDefault(u => u.Email == normalizedEmail);
+            if (user == null) return new HashSet<int>();
+            return userDb.Wishlists
+                .Where(w => w.UserId == user.Id)
+                .Select(w => w.PropertyId)
+                .ToHashSet();
         }
     }
 }

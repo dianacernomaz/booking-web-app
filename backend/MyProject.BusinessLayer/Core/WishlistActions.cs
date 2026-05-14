@@ -30,8 +30,8 @@ namespace MyProject.BusinessLayer.Core
                     .AsNoTracking()
                     .Include(w => w.Property)
                     .ThenInclude(p => p.Features)
-                    .Where(w => w.UserId == user.Id)
-                    .Select(w => w.Property)
+                    .Where(w => w.UserId == user.Id && w.Property != null)
+                    .Select(w => w.Property!)
                     .ToList();
 
                 var dtos = _mapper.Map<List<PropertySummaryDto>>(wishlistedProperties);

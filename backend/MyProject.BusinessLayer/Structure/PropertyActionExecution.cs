@@ -10,9 +10,9 @@ namespace MyProject.BusinessLayer.Structure
     {
         public PropertyActionExecution() { }
 
-        public List<PropertySummaryDto> GetAllPropertiesAction()
+        public List<PropertySummaryDto> GetAllPropertiesAction(string? userEmail = null)
         {
-            return GetAllPropertiesActionExecution();
+            return GetAllPropertiesActionExecution(userEmail);
         }
 
         public PropertyDetailDto? GetByIdAction(int id)
