@@ -13,6 +13,7 @@ public sealed class PropertyContext : DbContext
     public DbSet<AmenityData> Amenities => Set<AmenityData>();
     public DbSet<ReviewData> Reviews => Set<ReviewData>();
     public DbSet<NearbyPlaceData> NearbyPlaces => Set<NearbyPlaceData>();
+    public DbSet<WishlistData> Wishlists => Set<WishlistData>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -117,6 +118,13 @@ public sealed class PropertyContext : DbContext
                 .WithMany(property => property.Nearby)
                 .HasForeignKey(nearby => nearby.PropertyId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<WishlistData>(entity =>
+        {
+            entity.HasKey(w => w.Id);
+            entity.HasOne(w => w.User).WithMany(u => u.Wishlists).HasForeignKey(w => w.UserId).OnDelete(DeleteBehavior.NoAction);
+            entity.HasOne(w => w.Property).WithMany(p => p.WishlistedBy).HasForeignKey(w => w.PropertyId).OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

@@ -700,7 +700,7 @@ body {
     margin: 0 auto;
     padding: 0 40px;
     display: grid;
-    grid-template-columns: 2.5fr 1fr 1fr 1fr 1fr;
+    grid-template-columns: 2.5fr 1fr 1fr 1fr;
     gap: 60px;
     padding-bottom: 60px;
 }

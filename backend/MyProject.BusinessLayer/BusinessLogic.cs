@@ -35,5 +35,10 @@ namespace MyProject.BusinessLayer
         {
             return new BookingActionExecution();
         }
+
+        public IWishlistAction WishlistAction()
+        {
+            return new WishlistActionExecution();
+        }
     }
 }

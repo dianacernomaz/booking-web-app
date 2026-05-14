@@ -11,7 +11,7 @@ namespace Seeder
     {
         static void Main(string[] args)
         {
-            var connectionString = "Server=.\\SQLEXPRESS;Database=BookingWebAppDb;Trusted_Connection=True;MultipleActiveResultSets=True;TrustServerCertificate=True;Encrypt=False";
+            var connectionString = "Server=localhost,1433;Database=BookingWebAppDb;User Id=SA;Password=YourStrong!Passw0rd;TrustServerCertificate=True;";
             DbSession.ConnectionString = connectionString;
 
             using (var db = new UserContext())
@@ -355,6 +355,110 @@ namespace Seeder
                             AvailableTo = DateTime.UtcNow.AddMonths(6).ToString("yyyy-MM-dd"),
                             Description = "O experiență de neuitat sus, între ramuri.",
                             DescriptionExtra = "Evadează din cotidian și trezește-te direct în mijlocul pădurii. O aventură perfectă pentru cupluri.",
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        },
+                        new PropertyData
+                        {
+                            OwnerId = owner.Id,
+                            Host = owner.FullName,
+                            Title = "Apartament Romantic la Turnul Eiffel",
+                            City = "Paris",
+                            Country = "Franța",
+                            Address = "Av. Gustave Eiffel 5",
+                            Price = 250,
+                            Rating = 4.95m,
+                            Reviews = 120,
+                            Image = "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&q=80&w=800",
+                            Features = new List<PropertyFeatureData> { new() { Value = "Vedere la Turn" }, new() { Value = "Aer romantic" }, new() { Value = "Balcon" } },
+                            GalleryImages = new List<PropertyImageData> { new() { Url = "https://images.unsplash.com/photo-1502602898657-3e91760cbb34" } },
+                            IsApproved = true,
+                            MaxGuests = 2,
+                            Bedrooms = 1,
+                            Bathrooms = 1,
+                            Area = 45,
+                            AvailableFrom = DateTime.UtcNow.ToString("yyyy-MM-dd"),
+                            AvailableTo = DateTime.UtcNow.AddMonths(12).ToString("yyyy-MM-dd"),
+                            Description = "Vedere spectaculoasă chiar din patul tău.",
+                            DescriptionExtra = "Situat la doar 2 pași de Turnul Eiffel, perfect pentru un weekend romantic.",
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        },
+                        new PropertyData
+                        {
+                            OwnerId = owner.Id,
+                            Host = owner.FullName,
+                            Title = "Penthouse Neon în Shibuya",
+                            City = "Tokyo",
+                            Country = "Japonia",
+                            Address = "Shibuya Crossing 12",
+                            Price = 300,
+                            Rating = 4.85m,
+                            Reviews = 85,
+                            Image = "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&q=80&w=800",
+                            Features = new List<PropertyFeatureData> { new() { Value = "Geamuri panoramice" }, new() { Value = "High Tech" }, new() { Value = "Aproape de metrou" } },
+                            GalleryImages = new List<PropertyImageData> { new() { Url = "https://images.unsplash.com/photo-1536098561742-ca998e48cbcc" } },
+                            IsApproved = true,
+                            MaxGuests = 4,
+                            Bedrooms = 2,
+                            Bathrooms = 2,
+                            Area = 80,
+                            AvailableFrom = DateTime.UtcNow.ToString("yyyy-MM-dd"),
+                            AvailableTo = DateTime.UtcNow.AddMonths(12).ToString("yyyy-MM-dd"),
+                            Description = "Bucură-te de energia inepuizabilă a metropolei japoneze.",
+                            DescriptionExtra = "Un spațiu ultra-modern cu smart home control și vedere directă spre Shibuya Crossing.",
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        },
+                        new PropertyData
+                        {
+                            OwnerId = owner.Id,
+                            Host = owner.FullName,
+                            Title = "Loft Manhattan Central",
+                            City = "New York",
+                            Country = "Statele Unite",
+                            Address = "Broadway 42nd St",
+                            Price = 450,
+                            Rating = 4.7m,
+                            Reviews = 210,
+                            Image = "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&q=80&w=800",
+                            Features = new List<PropertyFeatureData> { new() { Value = "Central Park" }, new() { Value = "Vedere skyline" }, new() { Value = "Design modern" } },
+                            GalleryImages = new List<PropertyImageData> { new() { Url = "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267" } },
+                            IsApproved = true,
+                            MaxGuests = 6,
+                            Bedrooms = 3,
+                            Bathrooms = 2,
+                            Area = 150,
+                            AvailableFrom = DateTime.UtcNow.ToString("yyyy-MM-dd"),
+                            AvailableTo = DateTime.UtcNow.AddMonths(12).ToString("yyyy-MM-dd"),
+                            Description = "Simte pulsul orașului care nu doarme niciodată.",
+                            DescriptionExtra = "Un loft iconic situat la câteva minute de Times Square și Central Park.",
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        },
+                        new PropertyData
+                        {
+                            OwnerId = owner.Id,
+                            Host = owner.FullName,
+                            Title = "Vilă Zen în Junglă",
+                            City = "Bali",
+                            Country = "Indonezia",
+                            Address = "Ubud Forest 77",
+                            Price = 180,
+                            Rating = 4.95m,
+                            Reviews = 340,
+                            Image = "https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&q=80&w=800",
+                            Features = new List<PropertyFeatureData> { new() { Value = "Piscină infinită" }, new() { Value = "Meditație" }, new() { Value = "Natură sălbatică" } },
+                            GalleryImages = new List<PropertyImageData> { new() { Url = "https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86" } },
+                            IsApproved = true,
+                            MaxGuests = 4,
+                            Bedrooms = 2,
+                            Bathrooms = 2,
+                            Area = 200,
+                            AvailableFrom = DateTime.UtcNow.ToString("yyyy-MM-dd"),
+                            AvailableTo = DateTime.UtcNow.AddMonths(12).ToString("yyyy-MM-dd"),
+                            Description = "Refugiul tău spiritual în inima insulei zeilor.",
+                            DescriptionExtra = "O vilă complet deschisă, cu o piscină infinită deasupra junglei, ideală pentru relaxare profundă.",
                             CreatedAt = DateTime.UtcNow,
                             UpdatedAt = DateTime.UtcNow
                         }
