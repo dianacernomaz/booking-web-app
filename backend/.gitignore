@@ -1,0 +1,30 @@
+# Build outputs
+**/[Bb]in/
+**/[Oo]bj/
+**/TestResults/
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# IDE files
+.idea/
+.vs/
+
+# Logs and temp files
+*.log
+*.tmp
+*.temp
+
+# NuGet local artifacts
+packages/
+artifacts/
+
+# Environment and local config overrides
+.env
+.env.*
+appsettings.Local.json
+appsettings.*.local.json

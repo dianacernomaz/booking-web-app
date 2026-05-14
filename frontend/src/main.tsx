@@ -1,1 +1,16 @@
-import { StrictMode } from 'react'import { createRoot } from 'react-dom/client'import { BrowserRouter } from 'react-router-dom'import './CSS/index.css'import App from './App'createRoot(document.getElementById('root')!).render(    <StrictMode>        <BrowserRouter>            <App />        </BrowserRouter>    </StrictMode>,)
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import './assets/css/index.css';
+import App from './App';
+import { AxiosProvider } from './axios/AxiosProvider';
+
+createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+        <AxiosProvider>
+            <BrowserRouter>
+                <App />
+            </BrowserRouter>
+        </AxiosProvider>
+    </StrictMode>,
+);
