@@ -72,7 +72,9 @@ namespace MyProject.BusinessLayer.Core
                     db.Users.Add(user);
                     db.SaveChanges();
 
-                    return Success(_mapper.Map<SessionUserDto>(user), "Cont creat cu succes.");
+                    var response = _mapper.Map<SessionUserDto>(user);
+                    response.Token = GenerateJwtToken(user);
+                    return Success(response, "Cont creat cu succes.");
                 }
                 catch (DbUpdateException)
                 {
@@ -275,8 +277,11 @@ namespace MyProject.BusinessLayer.Core
                 Subject = new ClaimsIdentity(new[]
                 {
                     new Claim(ClaimTypes.Name, user.Email),
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                     new Claim(ClaimTypes.Email, user.Email),
                     new Claim(ClaimTypes.Role, user.Role),
+                    new Claim("userId", user.Id.ToString()),
+                    new Claim("role", user.Role),
                     new Claim("fullName", user.FullName)
                 }),
                 Expires = DateTime.UtcNow.AddMinutes(double.Parse(jwtSettings["ExpiryMinutes"]!)),

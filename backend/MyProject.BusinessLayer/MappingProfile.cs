@@ -12,6 +12,7 @@ namespace MyProject.BusinessLayer
         {
             CreateMap<UserData, StoredUserDto>();
             CreateMap<UserData, SessionUserDto>()
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.Initials, opt => opt.MapFrom(src => BuildInitials(src.FullName)));
 
             // Property mappings
