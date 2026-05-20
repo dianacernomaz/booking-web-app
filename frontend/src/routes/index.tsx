@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Navigate, Routes, Route } from "react-router-dom";
 import Home from "../pages/Home";
 import SearchResults from "../pages/SearchResults";
 import Login from "../pages/Login";
@@ -12,6 +12,28 @@ import AdminDashboard from "../pages/AdminDashboard";
 import Features from "../pages/Features";
 import About from "../pages/About";
 import ErrorPage from "../pages/ErrorPage";
+import { authService, type SessionUser } from "../auth/authService";
+import type { ReactElement } from "react";
+
+function ProtectedRoute({
+    children,
+    roles,
+}: {
+    children: ReactElement;
+    roles?: NonNullable<SessionUser["role"]>[];
+}) {
+    const session = authService.getSession();
+
+    if (!session?.token) {
+        return <Navigate to="/401" replace />;
+    }
+
+    if (roles?.length && !roles.includes(session.role || "user")) {
+        return <Navigate to="/403" replace />;
+    }
+
+    return children;
+}
 
 export default function Router() {
     return (
@@ -21,11 +43,11 @@ export default function Router() {
             <Route path="/login"        element={<Login />} />
             <Route path="/register"     element={<Register />} />
             <Route path="/property/:id" element={<PropertyDetail />} />
-            <Route path="/profile"      element={<MyProfile />} />
-            <Route path="/bookings"     element={<MyBookings />} />
-            <Route path="/my-properties" element={<MyProperties />} />
-            <Route path="/wishlist"     element={<Wishlist />} />
-            <Route path="/admin"        element={<AdminDashboard />} />
+            <Route path="/profile"      element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
+            <Route path="/bookings"     element={<ProtectedRoute><MyBookings /></ProtectedRoute>} />
+            <Route path="/my-properties" element={<ProtectedRoute><MyProperties /></ProtectedRoute>} />
+            <Route path="/wishlist"     element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
+            <Route path="/admin"        element={<ProtectedRoute roles={["admin"]}><AdminDashboard /></ProtectedRoute>} />
             <Route path="/features"     element={<Features />} />
             <Route path="/about"        element={<About />} />
             

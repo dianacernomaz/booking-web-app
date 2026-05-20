@@ -99,6 +99,7 @@ const Register: React.FC = () => {
             return;
         }
         setSubmitted(true);
+        setTimeout(() => navigate('/'), 900);
     };
 
     const passwordMatch = form.confirm && form.confirm === form.password;
@@ -129,9 +130,9 @@ const Register: React.FC = () => {
                             <div className="auth-success">
                                 <div className="auth-success-icon">🎉</div>
                                 <h2>Cont creat cu succes!</h2>
-                                <p>Bine ai venit, <strong>{form.fullName.split(' ')[0]}</strong>! Contul tău a fost creat.</p>
-                                <button className="auth-btn" onClick={() => navigate('/login')}>
-                                    Autentifică-te acum
+                                <p>Bine ai venit, <strong>{form.fullName.split(' ')[0]}</strong>! Contul tău a fost creat și autentificat.</p>
+                                <button className="auth-btn" onClick={() => navigate('/')}>
+                                    Mergi la pagina principală
                                 </button>
                             </div>
                         ) : (

@@ -44,6 +44,7 @@ namespace MyProject.API.Controller
         }
 
         [HttpGet("profile")]
+        [Authorize]
         public IActionResult GetProfile([FromQuery] string email)
         {
             var user = _authAction.GetCurrentUserAction(email);

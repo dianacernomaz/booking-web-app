@@ -79,12 +79,6 @@ const Login: React.FC = () => {
                                 <div className="auth-header">
                                     <h1>Autentificare</h1>
                                     <p>Introdu datele contului tău StayBooker</p>
-                                    <p style={{ fontSize: '0.85rem', color: '#64748b', marginTop: 8 }}>
-                                        Admin: admin@staybooker.com / Admin123!
-                                    </p>
-                                    <p style={{ fontSize: '0.85rem', color: '#64748b', marginTop: 4 }}>
-                                        User: user@staybooker.com / User123!
-                                    </p>
                                 </div>
 
                                 <form className="auth-form" onSubmit={handleSubmit} noValidate>
