@@ -4,6 +4,7 @@ using MyProject.BusinessLayer;
 using MyProject.BusinessLayer.Interfaces;
 using MyProject.Domain.Models.Property;
 using MyProject.Domain.Models.Responses;
+using System.Security.Claims;
 
 namespace MyProject.API.Controller
 {
@@ -24,7 +25,8 @@ namespace MyProject.API.Controller
         [AllowAnonymous]
         public IActionResult GetAll()
         {
-            var data = _propertyAction.GetAllPropertiesAction().Where(p => p.Id > 0).ToList(); // Logic moved to Business Layer but ensuring here too
+            var userEmail = User.FindFirstValue(ClaimTypes.Email);
+            var data = _propertyAction.GetAllPropertiesAction(userEmail);
             return Ok(data);
         }
 
@@ -32,6 +34,7 @@ namespace MyProject.API.Controller
         [AllowAnonymous]
         public IActionResult Search([FromQuery] PropertySearchRequestDto request)
         {
+            request.UserEmail = User.FindFirstValue(ClaimTypes.Email);
             var data = _propertyAction.SearchPropertiesAction(request);
             return Ok(data);
         }

@@ -7,6 +7,7 @@ import '../assets/css/Home.css';
 import '../assets/css/SearchResults.css';
 import type { ManagedPropertySummary } from '../types/managedProperties';
 import { propertyService } from '../axios/propertyService';
+import { authService } from '../auth/authService';
 
 function readParamsFromUrl() {
     const sp = new URLSearchParams(window.location.search);
@@ -32,7 +33,8 @@ const SearchResults: React.FC = () => {
 
     useEffect(() => {
         setLoading(true);
-        propertyService.search(activeParams)
+        const session = authService.getSession();
+        propertyService.search({ ...activeParams, userEmail: session?.email })
             .then(setResults)
             .catch(() => setResults([]))
             .finally(() => setLoading(false));

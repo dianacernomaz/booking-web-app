@@ -7,6 +7,7 @@ import HomePropertyCard from '../components/HomePropertyCard';
 import '../assets/css/Home.css';
 import type { ManagedPropertySummary } from '../types/managedProperties';
 import { propertyService } from '../axios/propertyService';
+import { authService } from '../auth/authService';
 
 interface Destination {
     id: number;
@@ -31,7 +32,10 @@ const Home: React.FC = () => {
     const [properties, setProperties] = useState<ManagedPropertySummary[]>([]);
 
     useEffect(() => {
-        propertyService.getAllSummaries().then((data) => setProperties(data.slice(0, 4))).catch(() => setProperties([]));
+        const session = authService.getSession();
+        propertyService.getAllSummaries(session?.email)
+            .then((data) => setProperties(data.slice(0, 4)))
+            .catch(() => setProperties([]));
     }, []);
 
     const handleSearch = (e: React.FormEvent) => {

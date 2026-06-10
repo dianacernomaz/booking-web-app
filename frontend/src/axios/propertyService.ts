@@ -55,8 +55,9 @@ function buildManagedPropertyPayload(property: Omit<ManagedProperty, 'id' | 'cre
 }
 
 export const propertyService = {
-    async getAllSummaries() {
-        const { data } = await axiosClient.get<ManagedPropertySummary[]>('/properties');
+    async getAllSummaries(userEmail?: string) {
+        const params = userEmail ? { userEmail } : undefined;
+        const { data } = await axiosClient.get<ManagedPropertySummary[]>('/properties', { params });
         return data;
     },
 
@@ -84,7 +85,7 @@ export const propertyService = {
         return data;
     },
 
-    async search(params: { location?: string; guests?: number; checkIn?: string; checkOut?: string }) {
+    async search(params: { location?: string; guests?: number; checkIn?: string; checkOut?: string; userEmail?: string }) {
         const { data } = await axiosClient.get<ManagedPropertySummary[]>('/properties/search', {
             params,
         });

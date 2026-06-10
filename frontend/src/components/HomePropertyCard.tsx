@@ -8,9 +8,10 @@ import { getSession } from '../utils/session';
 
 interface HomePropertyCardProps {
     property: ManagedPropertySummary;
+    onRemove?: (id: number) => void;
 }
 
-const HomePropertyCard: React.FC<HomePropertyCardProps> = ({ property }) => {
+const HomePropertyCard: React.FC<HomePropertyCardProps> = ({ property, onRemove }) => {
     const navigate = useNavigate();
     const { formatPrice } = useCurrency();
     const [isFavorite, setIsFavorite] = useState(Boolean(property.isFavorite));

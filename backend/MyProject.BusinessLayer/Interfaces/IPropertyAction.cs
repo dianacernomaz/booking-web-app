@@ -5,7 +5,7 @@ namespace MyProject.BusinessLayer.Interfaces
 {
     public interface IPropertyAction
     {
-        List<PropertySummaryDto> GetAllPropertiesAction();
+        List<PropertySummaryDto> GetAllPropertiesAction(string? userEmail = null);
 
         PropertyDetailDto? GetByIdAction(int id);
 

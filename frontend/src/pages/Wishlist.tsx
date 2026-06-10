@@ -33,6 +33,10 @@ const Wishlist: React.FC = () => {
     fetchWishlist();
   }, []);
 
+  const handleRemove = (id: number) => {
+    setProperties((prev) => prev.filter((p) => p.id !== id));
+  };
+
   return (
     <>
       <Header />
@@ -62,7 +66,7 @@ const Wishlist: React.FC = () => {
               ) : (
                 <div className="wishlist-grid">
                   {properties.map((property) => (
-                    <PropertyCard key={property.id} property={property} />
+                    <PropertyCard key={property.id} property={property} onRemove={handleRemove} />
                   ))}
                 </div>
               )}
@@ -76,3 +80,4 @@ const Wishlist: React.FC = () => {
 };
 
 export default Wishlist;
+
