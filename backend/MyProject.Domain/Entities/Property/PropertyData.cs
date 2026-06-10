@@ -92,4 +92,6 @@ public sealed class PropertyData
     public bool IsApproved { get; set; } = false;
 
     public List<BookingData> Bookings { get; set; } = [];
+
+    public List<FavoriteData> Favorites { get; set; } = [];
 }

@@ -5,7 +5,6 @@ using MyProject.DataAccess.Context;
 using MyProject.Domain.Entities;
 using MyProject.Domain.Models.Responses;
 using MyProject.Domain.Models.User;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -203,6 +202,7 @@ namespace MyProject.BusinessLayer.Core
                 var user = db.Users
                     .Include(candidate => candidate.Properties)
                     .Include(candidate => candidate.Bookings)
+                    .Include(candidate => candidate.Notifications)
                     .FirstOrDefault(candidate => candidate.Email == normalizedEmail);
 
                 if (user == null)
@@ -211,6 +211,7 @@ namespace MyProject.BusinessLayer.Core
                 }
 
                 db.Bookings.RemoveRange(user.Bookings);
+                db.Notifications.RemoveRange(user.Notifications);
                 db.Properties.RemoveRange(user.Properties);
                 db.Users.Remove(user);
                 db.SaveChanges();
@@ -261,32 +262,37 @@ namespace MyProject.BusinessLayer.Core
 
         private string GenerateJwtToken(UserData user)
         {
-            var config = new ConfigurationBuilder()
-                .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-                .AddJsonFile("appsettings.json")
-                .Build();
+            // JWT settings from appsettings.json
+            const string jwtKey = "StayBookerSuperSecretKey2026!@#$";
+            const string jwtIssuer = "StayBookerAPI";
+            const string jwtAudience = "StayBookerApp";
+            const int expiryMinutes = 60;
 
-            var jwtSettings = config.GetSection("Jwt");
-            var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]!);
+            var key = Encoding.ASCII.GetBytes(jwtKey);
 
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var tokenDescriptor = new SecurityTokenDescriptor
+            var claims = new[]
             {
-                Subject = new ClaimsIdentity(new[]
-                {
-                    new Claim(ClaimTypes.Name, user.Email),
-                    new Claim(ClaimTypes.Email, user.Email),
-                    new Claim(ClaimTypes.Role, user.Role),
-                    new Claim("fullName", user.FullName)
-                }),
-                Expires = DateTime.UtcNow.AddMinutes(double.Parse(jwtSettings["ExpiryMinutes"]!)),
-                Issuer = jwtSettings["Issuer"],
-                Audience = jwtSettings["Audience"],
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                new Claim(ClaimTypes.Name, user.Email),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Role, user.Role),
+                new Claim("fullName", user.FullName),
+                new Claim("userId", user.Id.ToString()),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
             };
 
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.UtcNow.AddMinutes(expiryMinutes),
+                Issuer = jwtIssuer,
+                Audience = jwtAudience,
+                SigningCredentials = new SigningCredentials(
+                    new SymmetricSecurityKey(key),
+                    SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var handler = new JwtSecurityTokenHandler();
+            return handler.WriteToken(handler.CreateToken(tokenDescriptor));
         }
 
         private static string NormalizeEmail(string email)

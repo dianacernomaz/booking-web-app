@@ -1,4 +1,4 @@
-﻿/* Import Google Fonts */
+/* Import Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap');
 
 :root {
@@ -404,6 +404,8 @@ body {
 }
 
 .favorite-btn.active {
+    background: #fee2e2;
+    color: #dc2626;
     animation: heartBeat 0.4s ease;
 }
 
@@ -1346,5 +1348,209 @@ body {
 @media (max-width: 480px) {
     .header-logo-text {
         font-size: 1.125rem;
+    }
+}
+
+.btn-notifications {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    border: 1.5px solid var(--border);
+    background: var(--white);
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: var(--transition);
+    flex-shrink: 0;
+}
+
+.btn-notifications:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: #eff6ff;
+}
+
+.btn-notifications-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-notifications-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+.btn-notifications-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.28);
+}
+
+@media (max-width: 768px) {
+    .btn-notifications {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+/* Footer Minimal */
+.footer-minimal {
+    padding-top: 56px;
+}
+
+.footer-minimal-content {
+    max-width: 1200px;
+    padding: 0 40px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 48px;
+}
+
+.footer-minimal-brand {
+    max-width: 360px;
+}
+
+.footer-minimal-logo {
+    display: inline-block;
+    color: var(--white);
+    text-decoration: none;
+    font-family: "Playfair Display", serif;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+.footer-minimal-text {
+    color: #9ca3af;
+    margin: 0;
+    line-height: 1.7;
+    font-size: 1rem;
+}
+
+.footer-minimal-nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(160px, 1fr));
+    gap: 32px;
+}
+
+.footer-links-group {
+    min-width: 0;
+}
+
+.footer-links-group h4 {
+    margin: 0 0 16px;
+    color: var(--white);
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.footer-link-grid {
+    display: grid;
+    gap: 12px;
+}
+
+.footer-minimal-link {
+    color: #9ca3af;
+    text-decoration: none;
+    transition: var(--transition);
+    font-size: 0.98rem;
+}
+
+.footer-minimal-link:hover {
+    color: var(--white);
+    transform: translateX(4px);
+}
+
+.footer-minimal-bottom {
+    max-width: 1200px;
+    padding: 22px 40px 28px;
+}
+
+@media (max-width: 1024px) {
+    .footer-minimal-content {
+        padding: 0 32px 36px;
+        gap: 32px;
+    }
+
+    .footer-minimal-bottom {
+        padding: 22px 32px 28px;
+    }
+}
+
+@media (max-width: 768px) {
+    .footer-minimal-content {
+        flex-direction: column;
+        padding: 0 24px 32px;
+        gap: 28px;
+    }
+
+    .footer-minimal-nav {
+        width: 100%;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
+
+    .footer-minimal-bottom {
+        padding: 20px 24px 24px;
+    }
+}
+
+@media (max-width: 480px) {
+    .footer-minimal-content {
+        padding: 0 20px 28px;
+    }
+
+    .footer-minimal-nav {
+        grid-template-columns: 1fr;
+    }
+
+    .footer-minimal-logo {
+        font-size: 1.75rem;
+    }
+
+    .footer-minimal-bottom {
+        padding: 18px 20px 22px;
+    }
+}
+
+
+
+
+.footer-minimal-logo {
+    display: inline-block;
+    margin-bottom: 16px;
+    color: #f7f3ee;
+    text-decoration: none;
+    font-family: "Playfair Display", serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+}
+
+.footer-minimal-logo:hover {
+    color: #ffffff;
+}
+
+@media (max-width: 480px) {
+    .footer-minimal-logo {
+        font-size: 2rem;
     }
 }

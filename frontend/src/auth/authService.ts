@@ -1,6 +1,8 @@
 import { axiosClient, SESSION_CHANGED_EVENT, SESSION_KEY, USER_KEY } from '../axios/axiosClient';
+import { decodeToken } from '../utils/jwt';
 
 export interface SessionUser {
+    userId?: string;
     email: string;
     fullName: string;
     initials: string;
@@ -65,6 +67,18 @@ export const authService = {
     async login({ email, password }: { email: string; password: string }) {
         try {
             const { data: session } = await axiosClient.post<SessionUser>('/auth/login', { email, password });
+            
+            // Extract role and userId directly from the JWT token
+            if (session.token) {
+                const decoded = decodeToken(session.token);
+                if (decoded) {
+                    session.userId = decoded.userId;
+                    if (decoded.role === 'admin' || decoded.role === 'user') {
+                        session.role = decoded.role;
+                    }
+                }
+            }
+
             const { data: user } = await axiosClient.get<StoredUser>('/auth/profile', {
                 params: { email: session.email },
             });
@@ -126,7 +140,10 @@ export const authService = {
                 ...profile,
             });
 
+            const currentSession = readJson<SessionUser>(SESSION_KEY);
             const session: SessionUser = {
+                userId: currentSession?.userId,
+                token: currentSession?.token,
                 email: user.email,
                 fullName: user.fullName,
                 initials: buildInitials(user.fullName || user.email),

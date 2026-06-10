@@ -35,5 +35,20 @@ namespace MyProject.BusinessLayer
         {
             return new BookingActionExecution();
         }
+
+        public INotificationAction NotificationAction()
+        {
+            return new NotificationActionExecution();
+        }
+
+        public IFavoriteAction FavoriteAction()
+        {
+            return new FavoriteActionExecution();
+        }
+
+        public IReviewAction ReviewAction()
+        {
+            return new ReviewActionExecution();
+        }
     }
 }

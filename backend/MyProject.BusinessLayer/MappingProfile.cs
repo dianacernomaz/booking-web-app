@@ -1,7 +1,9 @@
 using AutoMapper;
 using MyProject.Domain.Entities;
 using MyProject.Domain.Models.Booking;
+using MyProject.Domain.Models.Notification;
 using MyProject.Domain.Models.Property;
+using MyProject.Domain.Models.Review;
 using MyProject.Domain.Models.User;
 
 namespace MyProject.BusinessLayer
@@ -44,9 +46,30 @@ namespace MyProject.BusinessLayer
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt.ToString("O")))
                 .ForMember(dest => dest.PaidAt, opt => opt.MapFrom(src => src.PaidAt.HasValue ? src.PaidAt.Value.ToString("O") : null));
 
+            // Notification mappings
+            CreateMap<NotificationData, NotificationDto>()
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt.ToString("O")));
+
+            // Review mappings
+            CreateMap<ReviewData, MyProject.Domain.Models.Property.ReviewDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
+                .ForMember(dest => dest.PropertyId, opt => opt.MapFrom(src => src.PropertyId))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.User != null ? src.User.FullName : "Utilizator"))
+                .ForMember(dest => dest.Date, opt => opt.MapFrom(src => src.UpdatedAt.ToString("dd.MM.yyyy")))
+                .ForMember(dest => dest.Color, opt => opt.MapFrom(src => BuildReviewColor(src.UserId)))
+                .ForMember(dest => dest.Text, opt => opt.MapFrom(src => src.Comment))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt.ToString("O")))
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt.ToString("O")));
+
+            CreateMap<ReviewData, MyProject.Domain.Models.Review.ReviewDto>()
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User != null ? src.User.FullName : "Utilizator"))
+                .ForMember(dest => dest.Comment, opt => opt.MapFrom(src => src.Comment))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt.ToString("O")))
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt.ToString("O")));
+
             // Nested mappings
             CreateMap<AmenityData, AmenityDto>();
-            CreateMap<ReviewData, ReviewDto>();
             CreateMap<NearbyPlaceData, NearbyPlaceDto>();
         }
 
@@ -99,6 +122,22 @@ namespace MyProject.BusinessLayer
             }
 
             return "active";
+        }
+
+        private static string BuildReviewColor(int userId)
+        {
+            var colors = new[]
+            {
+                "#2563eb",
+                "#7c3aed",
+                "#ea580c",
+                "#059669",
+                "#dc2626",
+                "#0891b2"
+            };
+
+            var index = Math.Abs(userId) % colors.Length;
+            return colors[index];
         }
     }
 }

@@ -1,17 +1,14 @@
-import React from 'react';
+﻿import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../layouts/Header';
 import Footer from '../layouts/Footer';
-
 interface ErrorPageProps {
     code: 401 | 403 | 404 | 500;
     title: string;
     message: string;
 }
-
 const ErrorPage: React.FC<ErrorPageProps> = ({ code, title, message }) => {
     const navigate = useNavigate();
-
     return (
         <div className="home" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
             <Header />
@@ -27,7 +24,7 @@ const ErrorPage: React.FC<ErrorPageProps> = ({ code, title, message }) => {
                         {message}
                     </p>
                     <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-                        <button 
+                        <button
                             onClick={() => navigate('/')}
                             style={{
                                 padding: '0.75rem 1.5rem',
@@ -39,10 +36,10 @@ const ErrorPage: React.FC<ErrorPageProps> = ({ code, title, message }) => {
                                 cursor: 'pointer'
                             }}
                         >
-                            Înapoi la Home
+                            Inapoi la Home
                         </button>
                         {code === 401 && (
-                            <button 
+                            <button
                                 onClick={() => navigate('/login')}
                                 style={{
                                     padding: '0.75rem 1.5rem',
@@ -64,5 +61,4 @@ const ErrorPage: React.FC<ErrorPageProps> = ({ code, title, message }) => {
         </div>
     );
 };
-
 export default ErrorPage;

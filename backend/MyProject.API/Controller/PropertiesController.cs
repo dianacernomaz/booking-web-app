@@ -89,6 +89,19 @@ namespace MyProject.API.Controller
             return Ok(data);
         }
 
+        [HttpPut("admin/{id:int}")]
+        [Authorize(Roles = "admin")]
+        public IActionResult UpdateAsAdmin(int id, [FromBody] UpsertPropertyRequestDto request)
+        {
+            var data = _propertyAction.UpdateAsAdminAction(id, request);
+            if (data.IsSuccess)
+            {
+                return Ok(data.Data);
+            }
+
+            return BuildErrorResponse(data);
+        }
+
         [HttpPatch("admin/approve/{id:int}")]
         [Authorize(Roles = "admin")]
         public IActionResult Approve(int id)
@@ -119,6 +132,19 @@ namespace MyProject.API.Controller
         public IActionResult Delete(int id, [FromQuery] string ownerEmail)
         {
             var data = _propertyAction.DeleteAction(id, ownerEmail);
+            if (data.IsSuccess)
+            {
+                return NoContent();
+            }
+
+            return BuildErrorResponse(data);
+        }
+
+        [HttpDelete("admin/{id:int}")]
+        [Authorize(Roles = "admin")]
+        public IActionResult DeleteAsAdmin(int id)
+        {
+            var data = _propertyAction.DeleteAsAdminAction(id);
             if (data.IsSuccess)
             {
                 return NoContent();

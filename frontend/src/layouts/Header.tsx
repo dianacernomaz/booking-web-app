@@ -2,21 +2,24 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCurrency } from '../utils/currency';
 import { authService } from '../auth/authService';
+import { getUnreadNotificationsCount, notificationsChangedEvent } from '../utils/notifications';
 
 interface Session {
     email: string;
     fullName: string;
     initials: string;
     role?: 'admin' | 'user';
+    token?: string;
 }
 
 const Header: React.FC = () => {
     const navigate = useNavigate();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [session, setSession] = useState<Session | null>(null);
+    const [unreadCount, setUnreadCount] = useState(0);
     const { currency, currencies, setCurrency } = useCurrency();
 
-    // Cite?te sesiunea din localStorage la mount ?i la fiecare focus pe fereastra
+    // Citeste sesiunea din localStorage la mount si la fiecare focus pe fereastra
     useEffect(() => {
         const readSession = () => {
             setSession(authService.getSession());
@@ -30,6 +33,30 @@ const Header: React.FC = () => {
             window.removeEventListener('sb_session_changed', readSession);
         };
     }, []);
+
+    useEffect(() => {
+        const loadUnreadCount = () => {
+            const currentSession = authService.getSession();
+            if (!currentSession?.token) {
+                setUnreadCount(0);
+                return;
+            }
+
+            getUnreadNotificationsCount()
+                .then((data) => setUnreadCount(data.count))
+                .catch(() => setUnreadCount(0));
+        };
+
+        loadUnreadCount();
+        window.addEventListener('focus', loadUnreadCount);
+        window.addEventListener('sb_session_changed', loadUnreadCount);
+        window.addEventListener(notificationsChangedEvent, loadUnreadCount);
+        return () => {
+            window.removeEventListener('focus', loadUnreadCount);
+            window.removeEventListener('sb_session_changed', loadUnreadCount);
+            window.removeEventListener(notificationsChangedEvent, loadUnreadCount);
+        };
+    }, [session?.token]);
 
     const handleRouteChange = (path: string) => {
         setIsMenuOpen(false);
@@ -52,11 +79,12 @@ const Header: React.FC = () => {
                 <nav className={`header-nav ${isMenuOpen ? 'active' : ''}`}>
                     <button type="button" className="nav-link" onClick={() => handleRouteChange('/features')}>Features</button>
                     <button type="button" className="nav-link" onClick={() => handleRouteChange('/about')}>About</button>
+
                 </nav>
 
                 <div className="header-tools">
-                    <label className="header-currency" aria-label="Schimbă valuta">
-                        <span>Valută</span>
+                    <label className="header-currency" aria-label="Schimba valuta">
+                        <span>Valuta</span>
                         <select value={currency} onChange={(e) => setCurrency(e.target.value as typeof currency)}>
                             {currencies.map((item) => (
                                 <option key={item.code} value={item.code}>
@@ -66,20 +94,31 @@ const Header: React.FC = () => {
                         </select>
                     </label>
 
+                    {session && (
+                        <button className="btn-notifications" type="button" onClick={() => navigate('/notifications')} aria-label="Notificari">
+                            <span className="btn-notifications-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5" />
+                                    <path d="M10 20a2 2 0 0 0 4 0" />
+                                </svg>
+                            </span>
+                            {unreadCount > 0 && <span className="btn-notifications-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>}
+                        </button>
+                    )}
+
                     {/* Auth / Profile */}
                     <div className="header-actions">
                         {session ? (
                             <>
                                 <button className="btn-sign-in" onClick={() => navigate('/my-properties')}>
-                                    🏠 Cazările mele
-                                </button>
+                                    Cazarile mele</button>
                                 <button className="btn-sign-in" onClick={() => navigate('/bookings')}>
-                                    📋 Rezervările mele
-                                </button>
+                                    Rezervarile mele</button>
+                                <button className="btn-sign-in" onClick={() => navigate('/favorites')}>
+                                    Favorite</button>
                                 {session.role === 'admin' && (
                                     <button className="btn-sign-in" onClick={() => navigate('/admin')} style={{ color: '#febb02' }}>
-                                        ⚙️ Admin
-                                    </button>
+                                        Admin</button>
                                 )}
                                 <button className="btn-profile" onClick={() => navigate('/profile')}>
                                     <div className="btn-profile-avatar">{session.initials}</div>
@@ -100,7 +139,7 @@ const Header: React.FC = () => {
                 </div>
 
                 {/* Mobile hamburger */}
-                <button className="menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Toggle menu">
+                <button className="menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Deschide meniul">
                     {isMenuOpen ? 'X' : 'Menu'}
                 </button>
             </div>
@@ -109,3 +148,9 @@ const Header: React.FC = () => {
 };
 
 export default Header;
+
+
+
+
+
+

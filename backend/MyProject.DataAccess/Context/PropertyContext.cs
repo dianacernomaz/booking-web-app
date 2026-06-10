@@ -13,6 +13,7 @@ public sealed class PropertyContext : DbContext
     public DbSet<AmenityData> Amenities => Set<AmenityData>();
     public DbSet<ReviewData> Reviews => Set<ReviewData>();
     public DbSet<NearbyPlaceData> NearbyPlaces => Set<NearbyPlaceData>();
+    public DbSet<FavoriteData> Favorites => Set<FavoriteData>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -96,9 +97,15 @@ public sealed class PropertyContext : DbContext
         modelBuilder.Entity<ReviewData>(entity =>
         {
             entity.HasKey(review => review.Id);
-            entity.Property(review => review.Name).HasMaxLength(150);
-            entity.Property(review => review.Date).HasMaxLength(100);
-            entity.Property(review => review.Color).HasMaxLength(30);
+            entity.HasIndex(review => new { review.UserId, review.PropertyId }).IsUnique();
+            entity.Property(review => review.Comment).HasMaxLength(1000);
+
+            entity
+                .HasOne(review => review.User)
+                .WithMany(user => user.Reviews)
+                .HasForeignKey(review => review.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
+
             entity
                 .HasOne(review => review.Property)
                 .WithMany(property => property.ReviewsList)
@@ -116,6 +123,24 @@ public sealed class PropertyContext : DbContext
                 .HasOne(nearby => nearby.Property)
                 .WithMany(property => property.Nearby)
                 .HasForeignKey(nearby => nearby.PropertyId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<FavoriteData>(entity =>
+        {
+            entity.HasKey(favorite => favorite.Id);
+            entity.HasIndex(favorite => new { favorite.UserId, favorite.PropertyId }).IsUnique();
+
+            entity
+                .HasOne(favorite => favorite.User)
+                .WithMany(user => user.Favorites)
+                .HasForeignKey(favorite => favorite.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity
+                .HasOne(favorite => favorite.Property)
+                .WithMany(property => property.Favorites)
+                .HasForeignKey(favorite => favorite.PropertyId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
     }
