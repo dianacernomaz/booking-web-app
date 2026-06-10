@@ -16,6 +16,7 @@ public sealed class UserContext : DbContext
     public DbSet<AmenityData> Amenities => Set<AmenityData>();
     public DbSet<ReviewData> Reviews => Set<ReviewData>();
     public DbSet<NearbyPlaceData> NearbyPlaces => Set<NearbyPlaceData>();
+    public DbSet<WishlistData> Wishlists => Set<WishlistData>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

@@ -68,6 +68,25 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
             </button>
             <div className="sr-card-image">
                 <img src={property.image} alt={property.title} loading="lazy" />
+                <button 
+                    onClick={handleFavoriteClick}
+                    style={{ 
+                        position: 'absolute', 
+                        top: 12, 
+                        right: 12, 
+                        background: 'transparent',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '24px',
+                        textShadow: '0px 0px 4px rgba(0,0,0,0.5)',
+                        opacity: 0.9,
+                        transition: 'transform 0.2s',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.1)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+                >
+                    {isFavorite ? '❤️' : '🤍'}
+                </button>
             </div>
             <div className="sr-card-info">
                 <h3>{property.title}</h3>

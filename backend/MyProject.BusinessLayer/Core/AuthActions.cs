@@ -71,7 +71,9 @@ namespace MyProject.BusinessLayer.Core
                     db.Users.Add(user);
                     db.SaveChanges();
 
-                    return Success(_mapper.Map<SessionUserDto>(user), "Cont creat cu succes.");
+                    var response = _mapper.Map<SessionUserDto>(user);
+                    response.Token = GenerateJwtToken(user);
+                    return Success(response, "Cont creat cu succes.");
                 }
                 catch (DbUpdateException)
                 {

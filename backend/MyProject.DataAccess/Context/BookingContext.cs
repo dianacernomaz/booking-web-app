@@ -11,6 +11,7 @@ public sealed class BookingContext : DbContext
     public DbSet<ReviewData> Reviews => Set<ReviewData>();
     public DbSet<UserData> Users => Set<UserData>();
     public DbSet<PropertyData> Properties => Set<PropertyData>();
+    public DbSet<WishlistData> Wishlists => Set<WishlistData>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

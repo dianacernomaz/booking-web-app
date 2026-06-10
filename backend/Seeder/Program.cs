@@ -11,7 +11,7 @@ namespace Seeder
     {
         static void Main(string[] args)
         {
-            var connectionString = "Server=.\\SQLEXPRESS;Database=BookingWebAppDb;Trusted_Connection=True;MultipleActiveResultSets=True;TrustServerCertificate=True;Encrypt=False";
+            var connectionString = "Server=localhost,1433;Database=BookingWebAppDb;User Id=SA;Password=YourStrong!Passw0rd;TrustServerCertificate=True;";
             DbSession.ConnectionString = connectionString;
 
             using (var db = new UserContext())

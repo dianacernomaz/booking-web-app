@@ -15,6 +15,28 @@ import AdminPropertyEditor from "../pages/AdminPropertyEditor";
 import Features from "../pages/Features";
 import About from "../pages/About";
 import ErrorPage from "../pages/ErrorPage";
+import { authService, type SessionUser } from "../auth/authService";
+import type { ReactElement } from "react";
+
+function ProtectedRoute({
+    children,
+    roles,
+}: {
+    children: ReactElement;
+    roles?: NonNullable<SessionUser["role"]>[];
+}) {
+    const session = authService.getSession();
+
+    if (!session?.token) {
+        return <Navigate to="/401" replace />;
+    }
+
+    if (roles?.length && !roles.includes(session.role || "user")) {
+        return <Navigate to="/403" replace />;
+    }
+
+    return children;
+}
 
 export default function Router() {
     return (

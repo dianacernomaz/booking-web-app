@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyProject.DataAccess.Context;
 
@@ -11,9 +12,11 @@ using MyProject.DataAccess.Context;
 namespace MyProject.DataAccess.Migrations
 {
     [DbContext(typeof(UserContext))]
-    partial class UserContextModelSnapshot : ModelSnapshot
+    [Migration("20260514160911_AddWishlists")]
+    partial class AddWishlists
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -139,33 +142,6 @@ namespace MyProject.DataAccess.Migrations
                     b.ToTable("Bookings");
                 });
 
-            modelBuilder.Entity("MyProject.Domain.Entities.FavoriteData", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("PropertyId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PropertyId");
-
-                    b.HasIndex("UserId", "PropertyId")
-                        .IsUnique();
-
-                    b.ToTable("Favorites");
-                });
-
             modelBuilder.Entity("MyProject.Domain.Entities.NearbyPlaceData", b =>
                 {
                     b.Property<int>("Id")
@@ -197,44 +173,6 @@ namespace MyProject.DataAccess.Migrations
                     b.HasIndex("PropertyId");
 
                     b.ToTable("NearbyPlaces");
-                });
-
-            modelBuilder.Entity("MyProject.Domain.Entities.NotificationData", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("MyProject.Domain.Entities.PropertyData", b =>
@@ -410,13 +348,20 @@ namespace MyProject.DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Comment")
+                    b.Property<string>("Color")
                         .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("Date")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.Property<int>("PropertyId")
                         .HasColumnType("int");
@@ -424,18 +369,13 @@ namespace MyProject.DataAccess.Migrations
                     b.Property<int>("Rating")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("PropertyId");
-
-                    b.HasIndex("UserId", "PropertyId")
-                        .IsUnique();
 
                     b.ToTable("Reviews");
                 });
@@ -557,25 +497,6 @@ namespace MyProject.DataAccess.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("MyProject.Domain.Entities.FavoriteData", b =>
-                {
-                    b.HasOne("MyProject.Domain.Entities.PropertyData", "Property")
-                        .WithMany("Favorites")
-                        .HasForeignKey("PropertyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("MyProject.Domain.Entities.UserData", "User")
-                        .WithMany("Favorites")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Property");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("MyProject.Domain.Entities.NearbyPlaceData", b =>
                 {
                     b.HasOne("MyProject.Domain.Entities.PropertyData", "Property")
@@ -585,17 +506,6 @@ namespace MyProject.DataAccess.Migrations
                         .IsRequired();
 
                     b.Navigation("Property");
-                });
-
-            modelBuilder.Entity("MyProject.Domain.Entities.NotificationData", b =>
-                {
-                    b.HasOne("MyProject.Domain.Entities.UserData", "User")
-                        .WithMany("Notifications")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MyProject.Domain.Entities.PropertyData", b =>
@@ -650,15 +560,7 @@ namespace MyProject.DataAccess.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MyProject.Domain.Entities.UserData", "User")
-                        .WithMany("Reviews")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
                     b.Navigation("Property");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MyProject.Domain.Entities.WishlistData", b =>
@@ -686,8 +588,6 @@ namespace MyProject.DataAccess.Migrations
 
                     b.Navigation("Bookings");
 
-                    b.Navigation("Favorites");
-
                     b.Navigation("Features");
 
                     b.Navigation("GalleryImages");
@@ -705,13 +605,9 @@ namespace MyProject.DataAccess.Migrations
                 {
                     b.Navigation("Bookings");
 
-                    b.Navigation("Favorites");
-
-                    b.Navigation("Notifications");
-
                     b.Navigation("Properties");
 
-                    b.Navigation("Reviews");
+                    b.Navigation("Wishlists");
                 });
 #pragma warning restore 612, 618
         }

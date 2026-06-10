@@ -102,6 +102,7 @@ const Register: React.FC = () => {
             return;
         }
         setSubmitted(true);
+        setTimeout(() => navigate('/'), 900);
     };
 
     const passwordMatch = form.confirm && form.confirm === form.password;
