@@ -45,6 +45,11 @@ namespace MyProject.BusinessLayer.Structure
             return GetAllForAdminActionExecution();
         }
 
+        public ActionResponse<ManagedPropertyDto> UpdateAsAdminAction(int id, UpsertPropertyRequestDto request)
+        {
+            return UpdatePropertyAsAdminActionExecution(id, request);
+        }
+
         public ActionResponse ApproveAction(int id)
         {
             return ApprovePropertyActionExecution(id);
@@ -63,6 +68,11 @@ namespace MyProject.BusinessLayer.Structure
         public ActionResponse DeleteAction(int id, string ownerEmail)
         {
             return DeletePropertyActionExecution(id, ownerEmail);
+        }
+
+        public ActionResponse DeleteAsAdminAction(int id)
+        {
+            return DeletePropertyAsAdminActionExecution(id);
         }
     }
 }

@@ -30,6 +30,30 @@ export interface PropertyDetail {
     nearby: { icon: string; name: string; dist: string }[];
 }
 
+function buildManagedPropertyPayload(property: Omit<ManagedProperty, 'id' | 'createdAt' | 'updatedAt'> & { id?: number }) {
+    return {
+        ownerEmail: property.ownerEmail,
+        host: property.host,
+        title: property.title,
+        city: property.city,
+        country: property.country,
+        address: property.address,
+        price: property.price,
+        image: property.image,
+        galleryImages: property.galleryImages,
+        features: property.features,
+        badge: property.badge,
+        maxGuests: property.maxGuests,
+        bedrooms: property.bedrooms,
+        bathrooms: property.bathrooms,
+        area: property.area,
+        availableFrom: property.availableFrom,
+        availableTo: property.availableTo,
+        description: property.description,
+        descriptionExtra: property.descriptionExtra,
+    };
+}
+
 export const propertyService = {
     async getAllSummaries(userEmail?: string) {
         const params = userEmail ? { userEmail } : undefined;
@@ -50,27 +74,7 @@ export const propertyService = {
     },
 
     async saveManagedProperty(property: Omit<ManagedProperty, 'id' | 'createdAt' | 'updatedAt'> & { id?: number }) {
-        const payload = {
-            ownerEmail: property.ownerEmail,
-            host: property.host,
-            title: property.title,
-            city: property.city,
-            country: property.country,
-            address: property.address,
-            price: property.price,
-            image: property.image,
-            galleryImages: property.galleryImages,
-            features: property.features,
-            badge: property.badge,
-            maxGuests: property.maxGuests,
-            bedrooms: property.bedrooms,
-            bathrooms: property.bathrooms,
-            area: property.area,
-            availableFrom: property.availableFrom,
-            availableTo: property.availableTo,
-            description: property.description,
-            descriptionExtra: property.descriptionExtra,
-        };
+        const payload = buildManagedPropertyPayload(property);
 
         if (property.id) {
             const { data } = await axiosClient.put<ManagedProperty>(`/properties/${property.id}`, payload);
@@ -91,6 +95,16 @@ export const propertyService = {
     async getAdminAll() {
         const { data } = await axiosClient.get<ManagedProperty[]>('/properties/admin/all');
         return data;
+    },
+
+    async updateManagedPropertyAsAdmin(id: number, property: Omit<ManagedProperty, 'id' | 'createdAt' | 'updatedAt'>) {
+        const payload = buildManagedPropertyPayload(property);
+        const { data } = await axiosClient.put<ManagedProperty>(`/properties/admin/${id}`, payload);
+        return data;
+    },
+
+    async deleteManagedPropertyAsAdmin(id: number) {
+        await axiosClient.delete(`/properties/admin/${id}`);
     },
 
     async approve(id: number) {

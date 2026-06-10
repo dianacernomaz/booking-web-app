@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCurrency } from '../utils/currency';
 import type { ManagedPropertySummary } from '../types/managedProperties';
 import FeatureTag from './FeatureTag';
-import { authService } from '../auth/authService';
-import { wishlistService } from '../axios/wishlistService';
+import { addFavorite, checkFavorite, favoritesChangedEvent, removeFavorite } from '../utils/favorites';
+import { getSession } from '../utils/session';
 
 interface PropertyCardProps {
     property: ManagedPropertySummary;
@@ -14,32 +14,60 @@ interface PropertyCardProps {
 const PropertyCard: React.FC<PropertyCardProps> = ({ property, onRemove }) => {
     const navigate = useNavigate();
     const { formatPrice } = useCurrency();
-    const [isFavorite, setIsFavorite] = useState(property.isFavorite);
+    const [isFavorite, setIsFavorite] = useState(Boolean(property.isFavorite));
 
-    const handleFavoriteClick = async (e: React.MouseEvent) => {
-        e.stopPropagation();
-        const session = authService.getSession();
+    useEffect(() => {
+        setIsFavorite(Boolean(property.isFavorite));
+    }, [property.isFavorite]);
+
+    useEffect(() => {
+        const syncFavoriteState = () => {
+            const session = getSession();
+            if (!session?.token) {
+                setIsFavorite(Boolean(property.isFavorite));
+                return;
+            }
+
+            checkFavorite(property.id)
+                .then((data) => setIsFavorite(data.isFavorite))
+                .catch(() => undefined);
+        };
+
+        syncFavoriteState();
+        window.addEventListener(favoritesChangedEvent, syncFavoriteState);
+        window.addEventListener('sb_session_changed', syncFavoriteState);
+        return () => {
+            window.removeEventListener(favoritesChangedEvent, syncFavoriteState);
+            window.removeEventListener('sb_session_changed', syncFavoriteState);
+        };
+    }, [property.id, property.isFavorite]);
+
+    const handleFavoriteClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
+        event.stopPropagation();
+
+        const session = getSession();
         if (!session?.email) {
             navigate('/login');
             return;
         }
-        try {
-            await wishlistService.toggleWishlist(session.email, property.id);
-            const nowFavorite = !isFavorite;
-            setIsFavorite(nowFavorite);
-            // If we're removing (was favorite, now not), notify parent
-            if (!nowFavorite && onRemove) {
-                onRemove(property.id);
-            }
-        } catch (error) {
-            console.error('Failed to toggle wishlist', error);
+
+        if (isFavorite) {
+            await removeFavorite(property.id);
+            setIsFavorite(false);
+            return;
         }
+
+        await addFavorite(property.id);
+        setIsFavorite(true);
     };
 
     return (
         <div className="sr-card" onClick={() => navigate(`/property/${property.id}`)} style={{ cursor: 'pointer' }}>
             {property.badge && <span className="sr-badge">{property.badge}</span>}
-            <div className="sr-card-image" style={{ position: 'relative' }}>
+            <button type="button" className={`sr-fav-btn ${isFavorite ? 'active' : ''}`} onClick={handleFavoriteClick} aria-label={isFavorite ? 'Elimina din favorite' : 'Adauga la favorite'}>
+                {isFavorite ? '♥' : '♡'}
+            </button>
+            <div className="sr-card-image">
                 <img src={property.image} alt={property.title} loading="lazy" />
                 <button 
                     onClick={handleFavoriteClick}
@@ -63,10 +91,10 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property, onRemove }) => {
             </div>
             <div className="sr-card-info">
                 <h3>{property.title}</h3>
-                <p className="sr-card-location">📍 {property.location}</p>
+                <p className="sr-card-location">Locatie: {property.location}</p>
                 <div className="sr-card-meta">
-                    <span>👤 max {property.maxGuests} oaspeți</span>
-                    <span>📅 {property.availableFrom} - {property.availableTo}</span>
+                    <span>Max {property.maxGuests} oaspeti</span>
+                    <span>{property.availableFrom} - {property.availableTo}</span>
                 </div>
                 <div className="sr-card-features">
                     {property.features.map((feature) => (
@@ -75,7 +103,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property, onRemove }) => {
                 </div>
                 <div className="sr-card-footer">
                     <div className="sr-rating">
-                        <span className="sr-rating-score">⭐ {property.rating}</span>
+                        <span className="sr-rating-score">Stele {property.rating}</span>
                         <span className="sr-rating-count">({property.reviews} recenzii)</span>
                     </div>
                     <div className="sr-price">
@@ -83,7 +111,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property, onRemove }) => {
                         <span className="sr-price-period">/ noapte</span>
                     </div>
                 </div>
-                <button className="sr-book-btn">Rezervă acum</button>
+                <button className="sr-book-btn">Rezerva acum</button>
             </div>
         </div>
     );

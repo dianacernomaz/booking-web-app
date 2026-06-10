@@ -42,6 +42,12 @@ namespace MyProject.Domain.Models.Property
 
     public class ReviewDto
     {
+        public int Id { get; set; }
+
+        public int UserId { get; set; }
+
+        public int PropertyId { get; set; }
+
         public string Name { get; set; } = string.Empty;
 
         public string Date { get; set; } = string.Empty;
@@ -51,6 +57,10 @@ namespace MyProject.Domain.Models.Property
         public string Color { get; set; } = string.Empty;
 
         public string Text { get; set; } = string.Empty;
+
+        public string CreatedAt { get; set; } = string.Empty;
+
+        public string UpdatedAt { get; set; } = string.Empty;
     }
 
     public class NearbyPlaceDto

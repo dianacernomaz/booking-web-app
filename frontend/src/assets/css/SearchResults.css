@@ -1,4 +1,4 @@
-﻿/* ─────────────────────────────────────────────────────────────────────────────
+/* ─────────────────────────────────────────────────────────────────────────────
    SearchResults.css
    Stiluri specifice paginii /search.
    Stilurile Header / Footer sunt deja în Home.css (importat în SearchResults.tsx)
@@ -315,10 +315,15 @@
     cursor: pointer;
     font-size: 1rem;
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    transition: transform 0.2s ease;
+    transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
 }
 
 .sr-fav-btn:hover { transform: scale(1.2); }
+
+.sr-fav-btn.active {
+    background: #fee2e2;
+    color: #dc2626;
+}
 
 /* Image */
 .sr-card-image {

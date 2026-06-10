@@ -19,6 +19,8 @@ namespace MyProject.BusinessLayer.Interfaces
 
         List<ManagedPropertyDto> GetAllForAdminAction();
 
+        ActionResponse<ManagedPropertyDto> UpdateAsAdminAction(int id, UpsertPropertyRequestDto request);
+
         ActionResponse ApproveAction(int id);
 
         ActionResponse RejectAction(int id);
@@ -26,5 +28,7 @@ namespace MyProject.BusinessLayer.Interfaces
         ActionResponse UpdateAvailabilityAction(int id, List<int> occupiedDays);
 
         ActionResponse DeleteAction(int id, string ownerEmail);
+
+        ActionResponse DeleteAsAdminAction(int id);
     }
 }
