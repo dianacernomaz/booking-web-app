@@ -249,6 +249,53 @@ namespace MyProject.BusinessLayer.Core
             }
         }
 
+        internal ActionResponse<ManagedPropertyDto> UpdatePropertyAsAdminActionExecution(int id, UpsertPropertyRequestDto request)
+        {
+            var validationError = Validate(request);
+            if (validationError != null)
+            {
+                return Failed<ManagedPropertyDto>(400, validationError);
+            }
+
+            using (var db = new PropertyContext())
+            {
+                var property = QueryManagedGraph(db, true)
+                    .Include(item => item.Amenities)
+                    .Include(item => item.Nearby)
+                    .FirstOrDefault(item => item.Id == id);
+
+                if (property == null)
+                {
+                    return Failed<ManagedPropertyDto>(404, "Proprietatea nu a fost gasita.");
+                }
+
+                property.Host = string.IsNullOrWhiteSpace(request.Host) ? property.Host : request.Host.Trim();
+                property.Title = request.Title.Trim();
+                property.City = request.City.Trim();
+                property.Country = request.Country.Trim();
+                property.Address = request.Address.Trim();
+                property.Price = request.Price;
+                property.Image = request.Image.Trim();
+                property.Badge = string.IsNullOrWhiteSpace(request.Badge) ? null : request.Badge.Trim();
+                property.MaxGuests = request.MaxGuests;
+                property.Bedrooms = request.Bedrooms;
+                property.Bathrooms = request.Bathrooms;
+                property.Area = request.Area;
+                property.AvailableFrom = request.AvailableFrom.Trim();
+                property.AvailableTo = request.AvailableTo.Trim();
+                property.Description = request.Description.Trim();
+                property.DescriptionExtra = request.DescriptionExtra.Trim();
+                ReplaceChildren(db, property.GalleryImages, BuildGalleryImages(request.GalleryImages));
+                ReplaceChildren(db, property.Features, BuildFeatures(request.Features));
+                ReplaceChildren(db, property.Amenities, BuildAmenities(request.Features));
+                ReplaceChildren(db, property.Nearby, BuildNearby(request.Address, request.City));
+                property.UpdatedAt = DateTime.UtcNow;
+
+                db.SaveChanges();
+                return Success(_mapper.Map<ManagedPropertyDto>(property), "Proprietate actualizata de admin.");
+            }
+        }
+
         internal ActionResponse ApprovePropertyActionExecution(int id)
         {
             using (var db = new PropertyContext())
@@ -285,6 +332,23 @@ namespace MyProject.BusinessLayer.Core
                 ReplaceChildren(db, property.OccupiedDays, occupiedDays.Select(day => new PropertyOccupiedDayData { Day = day }));
                 db.SaveChanges();
                 return Success("Disponibilitatea a fost actualizata.");
+            }
+        }
+
+        internal ActionResponse DeletePropertyAsAdminActionExecution(int id)
+        {
+            using (var db = new PropertyContext())
+            {
+                var property = db.Properties.FirstOrDefault(item => item.Id == id);
+
+                if (property == null)
+                {
+                    return Failed(404, "Proprietatea nu a fost gasita.");
+                }
+
+                db.Properties.Remove(property);
+                db.SaveChanges();
+                return Success("Proprietate stearsa de admin.");
             }
         }
 
@@ -387,6 +451,7 @@ namespace MyProject.BusinessLayer.Core
                 .Include(property => property.Amenities)
                 .Include(property => property.OccupiedDays)
                 .Include(property => property.ReviewsList)
+                .ThenInclude(review => review.User)
                 .Include(property => property.Nearby)
                 .AsSplitQuery();
         }

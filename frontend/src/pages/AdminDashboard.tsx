@@ -18,6 +18,18 @@ const AdminDashboard: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'stats' | 'users' | 'properties'>('stats');
     const [loading, setLoading] = useState(true);
 
+    const loadDashboard = async () => {
+        const [nextStats, nextUsers, nextProperties] = await Promise.all([
+            getAdminStats(),
+            authService.getAdminUsers(),
+            propertyService.getAdminAll(),
+        ]);
+
+        setStats(nextStats);
+        setUsers(nextUsers);
+        setProperties(nextProperties);
+    };
+
     useEffect(() => {
         const session = authService.getSession();
         if (!session || session.role !== 'admin') {
@@ -25,27 +37,17 @@ const AdminDashboard: React.FC = () => {
             return;
         }
 
-        Promise.all([
-            getAdminStats(),
-            authService.getAdminUsers(),
-            propertyService.getAdminAll()
-        ]).then(([s, u, p]) => {
-            setStats(s);
-            setUsers(u);
-            setProperties(p);
-        }).finally(() => setLoading(false));
+        void loadDashboard().finally(() => setLoading(false));
     }, [navigate]);
 
-    const handleApprove = async (id: number) => {
-        await propertyService.approve(id);
-        const updated = await propertyService.getAdminAll();
-        setProperties(updated);
-    };
+    const handleDelete = async (property: ManagedProperty) => {
+        const confirmed = window.confirm(`Stergi proprietatea "${property.title}"?`);
+        if (!confirmed) {
+            return;
+        }
 
-    const handleReject = async (id: number) => {
-        await propertyService.reject(id);
-        const updated = await propertyService.getAdminAll();
-        setProperties(updated);
+        await propertyService.deleteManagedPropertyAsAdmin(property.id);
+        await loadDashboard();
     };
 
     const handleRoleUpdate = async (email: string, role: string) => {
@@ -66,20 +68,20 @@ const AdminDashboard: React.FC = () => {
                 </div>
 
                 <div className="ap-summary" style={{ marginBottom: '2rem' }}>
-                    <button 
-                        className={`ap-secondary-btn ${activeTab === 'stats' ? 'ap-primary-btn' : ''}`}
+                    <button
+                        className={'ap-secondary-btn ' + (activeTab === 'stats' ? 'ap-primary-btn' : '')}
                         onClick={() => setActiveTab('stats')}
                     >
                         Statistici
                     </button>
-                    <button 
-                        className={`ap-secondary-btn ${activeTab === 'users' ? 'ap-primary-btn' : ''}`}
+                    <button
+                        className={'ap-secondary-btn ' + (activeTab === 'users' ? 'ap-primary-btn' : '')}
                         onClick={() => setActiveTab('users')}
                     >
                         Utilizatori
                     </button>
-                    <button 
-                        className={`ap-secondary-btn ${activeTab === 'properties' ? 'ap-primary-btn' : ''}`}
+                    <button
+                        className={'ap-secondary-btn ' + (activeTab === 'properties' ? 'ap-primary-btn' : '')}
                         onClick={() => setActiveTab('properties')}
                     >
                         Proprietati
@@ -97,7 +99,7 @@ const AdminDashboard: React.FC = () => {
                             <strong>{stats.totalProperties}</strong>
                         </div>
                         <div className="ap-summary-card">
-                            <span className="ap-summary-label">Asteapta Aprobare</span>
+                            <span className="ap-summary-label">Neaprobate</span>
                             <strong style={{ color: '#febb02' }}>{stats.pendingProperties}</strong>
                         </div>
                         <div className="ap-summary-card">
@@ -106,17 +108,17 @@ const AdminDashboard: React.FC = () => {
                         </div>
                         <div className="ap-summary-card">
                             <span className="ap-summary-label">Venit Total</span>
-                            <strong style={{ color: '#008009' }}>{stats.totalRevenue} €</strong>
+                            <strong style={{ color: '#008009' }}>{stats.totalRevenue} EUR</strong>
                         </div>
                     </div>
                 )}
 
                 {activeTab === 'users' && (
                     <div className="ap-cards">
-                        {users.map(user => (
-                            <AdminUserCard 
-                                key={user.email} 
-                                user={user} 
+                        {users.map((user) => (
+                            <AdminUserCard
+                                key={user.email}
+                                user={user}
                                 onToggleAdmin={(email, currentRole) => handleRoleUpdate(email, currentRole === 'admin' ? 'user' : 'admin')}
                             />
                         ))}
@@ -125,12 +127,12 @@ const AdminDashboard: React.FC = () => {
 
                 {activeTab === 'properties' && (
                     <div className="ap-cards">
-                        {properties.map(property => (
-                            <AdminPropertyCard 
-                                key={property.id} 
-                                property={property} 
-                                onApprove={handleApprove}
-                                onReject={handleReject}
+                        {properties.map((property) => (
+                            <AdminPropertyCard
+                                key={property.id}
+                                property={property}
+                                onEdit={(item) => navigate(`/admin/properties/${item.id}/edit`)}
+                                onDelete={handleDelete}
                             />
                         ))}
                     </div>
@@ -142,3 +144,4 @@ const AdminDashboard: React.FC = () => {
 };
 
 export default AdminDashboard;
+

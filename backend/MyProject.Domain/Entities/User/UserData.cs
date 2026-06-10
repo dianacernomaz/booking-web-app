@@ -44,5 +44,9 @@ public sealed class UserData
 
     public List<BookingData> Bookings { get; set; } = [];
 
-    public List<WishlistData> Wishlists { get; set; } = [];
+    public List<NotificationData> Notifications { get; set; } = [];
+
+    public List<FavoriteData> Favorites { get; set; } = [];
+
+    public List<ReviewData> Reviews { get; set; } = [];
 }

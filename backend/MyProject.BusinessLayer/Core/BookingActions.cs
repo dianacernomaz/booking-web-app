@@ -44,7 +44,7 @@ namespace MyProject.BusinessLayer.Core
                     .AsNoTracking()
                     .Include(booking => booking.User)
                     .Include(booking => booking.Property)
-                    .ThenInclude(p => p.Owner)
+                    .ThenInclude(property => property!.Owner)
                     .Where(booking => booking.Property != null && booking.Property.Owner != null && booking.Property.Owner.Email == normalizedEmail)
                     .OrderByDescending(booking => booking.CreatedAt)
                     .ToList();
@@ -101,6 +101,31 @@ namespace MyProject.BusinessLayer.Core
                 };
 
                 db.Bookings.Add(booking);
+                db.Notifications.Add(new NotificationData
+                {
+                    UserId = user.Id,
+                    User = user,
+                    Title = "Rezervare confirmata",
+                    Message = $"Rezervarea {booking.Code} pentru {booking.PropertyTitle} a fost creata cu succes.",
+                    Type = "Reservation",
+                    IsRead = false,
+                    CreatedAt = DateTime.UtcNow
+                });
+
+                if (string.Equals(booking.PaymentStatus, "paid", StringComparison.OrdinalIgnoreCase))
+                {
+                    db.Notifications.Add(new NotificationData
+                    {
+                        UserId = user.Id,
+                        User = user,
+                        Title = "Plata confirmata",
+                        Message = $"Plata pentru rezervarea {booking.Code} a fost confirmata.",
+                        Type = "Reservation",
+                        IsRead = false,
+                        CreatedAt = DateTime.UtcNow
+                    });
+                }
+
                 db.SaveChanges();
                 return Success(_mapper.Map<BookingDto>(booking), "Rezervare creata.");
             }
@@ -124,6 +149,15 @@ namespace MyProject.BusinessLayer.Core
                 }
 
                 booking.Status = "cancelled";
+                db.Notifications.Add(new NotificationData
+                {
+                    UserId = booking.UserId,
+                    Title = "Rezervare anulata",
+                    Message = $"Rezervarea {booking.Code} pentru {booking.PropertyTitle} a fost anulata.",
+                    Type = "Reservation",
+                    IsRead = false,
+                    CreatedAt = DateTime.UtcNow
+                });
                 db.SaveChanges();
                 return Success("Rezervarea a fost anulata.");
             }

@@ -5,9 +5,7 @@ import Footer from '../layouts/Footer';
 import '../assets/css/Home.css';
 import '../assets/css/MyProfile.css';
 import { authService } from '../auth/authService';
-
 type Tab = 'overview' | 'settings' | 'security';
-
 const MyProfile: React.FC = () => {
     const navigate = useNavigate();
     const session = authService.getSession();
@@ -28,13 +26,11 @@ const MyProfile: React.FC = () => {
         newPassword: '',
         confirmPassword: '',
     });
-
     useEffect(() => {
         if (!session?.email) {
             navigate('/login');
             return;
         }
-
         authService.fetchCurrentUser(session.email)
             .then((data) => {
                 setUser(data);
@@ -49,11 +45,9 @@ const MyProfile: React.FC = () => {
             })
             .catch(() => undefined);
     }, [navigate, session?.email]);
-
     if (!session?.email) {
         return null;
     }
-
     return (
         <div className="home">
             <Header />
@@ -64,49 +58,48 @@ const MyProfile: React.FC = () => {
                     </div>
                     <h2 className="mp-name">{form.fullName || session.fullName}</h2>
                     <nav className="mp-nav">
-                        <button className={`mp-nav-item ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')}>Profil</button>
-                        <button className={`mp-nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>Setări cont</button>
-                        <button className={`mp-nav-item ${activeTab === 'security' ? 'active' : ''}`} onClick={() => setActiveTab('security')}>Securitate</button>
-                        <button className="mp-nav-item" onClick={() => navigate('/my-properties')}>Cazările mele</button>
-                        <button className="mp-nav-item" onClick={() => navigate('/bookings')}>Rezervările mele</button>
+                        <button className={'mp-nav-item ' + (activeTab === 'overview' ? 'active' : '')} onClick={() => setActiveTab('overview')}>Profil</button>
+                        <button className={'mp-nav-item ' + (activeTab === 'settings' ? 'active' : '')} onClick={() => setActiveTab('settings')}>Setari cont</button>
+                        <button className={'mp-nav-item ' + (activeTab === 'security' ? 'active' : '')} onClick={() => setActiveTab('security')}>Securitate</button>
+                        <button className="mp-nav-item" onClick={() => navigate('/my-properties')}>Cazarile mele</button>
+                        <button className="mp-nav-item" onClick={() => navigate('/bookings')}>Rezervarile mele</button>
+                        <button className="mp-nav-item" onClick={() => navigate('/favorites')}>Favorite</button>
                         <button className="mp-nav-item mp-nav-item--danger" onClick={() => { authService.logout(); navigate('/login'); }}>Deconectare</button>
                     </nav>
                 </aside>
-
                 <main className="mp-main">
                     {activeTab === 'overview' && (
                         <div className="mp-tab-content">
                             <div className="mp-tab-header">
                                 <h1>Profilul meu</h1>
-                                <p>Administrează informațiile personale și preferințele contului tău.</p>
+                                <p>Administreaza informatiile personale si preferintele contului tau.</p>
                             </div>
                             <div className="mp-profile-card">
                                 <div className="mp-profile-card-left">
                                     <div className="mp-avatar-lg" style={{ background: '#2563eb' }}>{session.initials}</div>
                                     <div>
                                         <h2>{user?.fullName}</h2>
-                                        <p>✉️ {user?.email}</p>
-                                        {user?.phone && <p>📞 {user.phone}</p>}
-                                        {user?.city && user?.country && <p>📍 {user.city}, {user.country}</p>}
+                                        <p>Email: {user?.email}</p>
+                                        {user?.phone && <p>Telefon: {user.phone}</p>}
+                                        {user?.city && user?.country && <p>Locatie: {user.city}, {user.country}</p>}
                                     </div>
                                 </div>
                             </div>
                             {user?.bio && <div className="mp-section"><h3 className="mp-section-title">Despre mine</h3><p className="mp-bio">{user.bio}</p></div>}
                         </div>
                     )}
-
                     {activeTab === 'settings' && (
                         <div className="mp-tab-content">
                             <div className="mp-tab-header">
-                                <h1>Setări cont</h1>
-                                <p>Actualizează datele personale.</p>
+                                <h1>Setari cont</h1>
+                                <p>Actualizeaza datele personale.</p>
                             </div>
                             <form className="mp-form" onSubmit={async (e) => {
                                 e.preventDefault();
                                 const result = await authService.updateCurrentUserProfile(form);
                                 if (result.ok) {
                                     setUser(result.user);
-                                    setMessage('Modificările au fost salvate.');
+                                    setMessage('Modificarile au fost salvate.');
                                 } else {
                                     setMessage(result.error || 'Nu am putut salva.');
                                 }
@@ -116,24 +109,23 @@ const MyProfile: React.FC = () => {
                                         <div className="mp-field mp-field--full"><label>Nume complet</label><input value={form.fullName} onChange={(e) => setForm((prev) => ({ ...prev, fullName: e.target.value }))} /></div>
                                         <div className="mp-field mp-field--full"><label>Email</label><input type="email" value={form.email} onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))} /></div>
                                         <div className="mp-field"><label>Telefon</label><input value={form.phone} onChange={(e) => setForm((prev) => ({ ...prev, phone: e.target.value }))} /></div>
-                                        <div className="mp-field"><label>Oraș</label><input value={form.city} onChange={(e) => setForm((prev) => ({ ...prev, city: e.target.value }))} /></div>
-                                        <div className="mp-field"><label>Țară</label><input value={form.country} onChange={(e) => setForm((prev) => ({ ...prev, country: e.target.value }))} /></div>
+                                        <div className="mp-field"><label>Oras</label><input value={form.city} onChange={(e) => setForm((prev) => ({ ...prev, city: e.target.value }))} /></div>
+                                        <div className="mp-field"><label>Tara</label><input value={form.country} onChange={(e) => setForm((prev) => ({ ...prev, country: e.target.value }))} /></div>
                                         <div className="mp-field mp-field--full"><label>Bio</label><textarea rows={4} value={form.bio} onChange={(e) => setForm((prev) => ({ ...prev, bio: e.target.value }))} /></div>
                                     </div>
                                 </div>
                                 <div className="mp-form-actions">
                                     {message && <span className="mp-save-msg">{message}</span>}
-                                    <button type="submit" className="mp-save-btn">Salvează modificările</button>
+                                    <button type="submit" className="mp-save-btn">Salveaza modificarile</button>
                                 </div>
                             </form>
                         </div>
                     )}
-
                     {activeTab === 'security' && (
                         <div className="mp-tab-content">
                             <div className="mp-tab-header">
                                 <h1>Securitate</h1>
-                                <p>Schimbă parola sau șterge contul.</p>
+                                <p>Schimba parola sau sterge contul.</p>
                             </div>
                             <form className="mp-form" onSubmit={async (e) => {
                                 e.preventDefault();
@@ -142,33 +134,32 @@ const MyProfile: React.FC = () => {
                                     return;
                                 }
                                 const result = await authService.updateCurrentUserPassword(passwordForm.currentPassword, passwordForm.newPassword);
-                                setSecMessage(result.ok ? 'Parola a fost schimbată.' : result.error || 'Nu am putut schimba parola.');
+                                setSecMessage(result.ok ? 'Parola a fost schimbata.' : result.error || 'Nu am putut schimba parola.');
                             }}>
                                 <div className="mp-form-section">
                                     <div className="mp-form-grid">
-                                        <div className="mp-field mp-field--full"><label>Parola curentă</label><input type="password" value={passwordForm.currentPassword} onChange={(e) => setPasswordForm((prev) => ({ ...prev, currentPassword: e.target.value }))} /></div>
-                                        <div className="mp-field"><label>Parola nouă</label><input type="password" value={passwordForm.newPassword} onChange={(e) => setPasswordForm((prev) => ({ ...prev, newPassword: e.target.value }))} /></div>
-                                        <div className="mp-field"><label>Confirmă parola</label><input type="password" value={passwordForm.confirmPassword} onChange={(e) => setPasswordForm((prev) => ({ ...prev, confirmPassword: e.target.value }))} /></div>
+                                        <div className="mp-field mp-field--full"><label>Parola curenta</label><input type="password" value={passwordForm.currentPassword} onChange={(e) => setPasswordForm((prev) => ({ ...prev, currentPassword: e.target.value }))} /></div>
+                                        <div className="mp-field"><label>Parola noua</label><input type="password" value={passwordForm.newPassword} onChange={(e) => setPasswordForm((prev) => ({ ...prev, newPassword: e.target.value }))} /></div>
+                                        <div className="mp-field"><label>Confirma parola</label><input type="password" value={passwordForm.confirmPassword} onChange={(e) => setPasswordForm((prev) => ({ ...prev, confirmPassword: e.target.value }))} /></div>
                                     </div>
                                 </div>
                                 <div className="mp-form-actions">
                                     {secMessage && <span className="mp-save-msg">{secMessage}</span>}
-                                    <button type="submit" className="mp-save-btn">Schimbă parola</button>
+                                    <button type="submit" className="mp-save-btn">Schimba parola</button>
                                 </div>
                             </form>
-
                             <div className="mp-form-section mp-danger-zone">
-                                <h3>Zona periculoasă</h3>
-                                <p>Ștergerea contului elimină și proprietățile și rezervările aferente.</p>
+                                <h3>Zona periculoasa</h3>
+                                <p>Stergerea contului elimina si proprietatile si rezervarile aferente.</p>
                                 <button type="button" className="mp-delete-btn" onClick={async () => {
                                     const result = await authService.deleteCurrentUser();
                                     if (result.ok) {
                                         navigate('/register');
                                     } else {
-                                        setSecMessage(result.error || 'Nu am putut șterge contul.');
+                                        setSecMessage(result.error || 'Nu am putut sterge contul.');
                                     }
                                 }}>
-                                    Șterge contul
+                                    Sterge contul
                                 </button>
                             </div>
                         </div>
@@ -179,5 +170,5 @@ const MyProfile: React.FC = () => {
         </div>
     );
 };
-
 export default MyProfile;
+

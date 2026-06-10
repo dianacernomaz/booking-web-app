@@ -93,5 +93,5 @@ public sealed class PropertyData
 
     public List<BookingData> Bookings { get; set; } = [];
 
-    public List<WishlistData> WishlistedBy { get; set; } = [];
+    public List<FavoriteData> Favorites { get; set; } = [];
 }

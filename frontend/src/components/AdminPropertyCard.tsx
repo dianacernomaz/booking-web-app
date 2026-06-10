@@ -1,18 +1,20 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useCurrency } from '../utils/currency';
 import type { ManagedProperty } from '../types/managedProperties';
 
 interface AdminPropertyCardProps {
     property: ManagedProperty;
-    onApprove: (id: number) => void;
-    onReject: (id: number) => void;
+    onEdit: (property: ManagedProperty) => void;
+    onDelete: (property: ManagedProperty) => void;
 }
 
-const AdminPropertyCard: React.FC<AdminPropertyCardProps> = ({ property, onApprove, onReject }) => {
+const AdminPropertyCard: React.FC<AdminPropertyCardProps> = ({ property, onEdit, onDelete }) => {
     const navigate = useNavigate();
+    const { formatPrice } = useCurrency();
 
     return (
-        <div key={property.id} className="ap-card">
+        <div className="ap-card">
             <img src={property.image} alt={property.title} className="ap-card-image" />
             <div className="ap-card-body">
                 <div className="ap-card-top">
@@ -21,17 +23,23 @@ const AdminPropertyCard: React.FC<AdminPropertyCardProps> = ({ property, onAppro
                         <p>{property.city}, {property.country}</p>
                         <p style={{ fontSize: '0.85rem', marginTop: '4px' }}>Proprietar: {property.ownerEmail}</p>
                     </div>
-                    <div className={`ap-message ${property.isApproved ? 'ap-message--success' : 'ap-message--error'}`} style={{ margin: 0, padding: '4px 12px', fontSize: '0.8rem' }}>
-                        {property.isApproved ? 'Aprobata' : 'In asteptare'}
-                    </div>
+                    <span className="ap-card-price">{formatPrice(property.price)}</span>
+                </div>
+                <div className="ap-card-meta">
+                    <span>{property.maxGuests} oaspeti</span>
+                    <span>{property.bedrooms} dormitoare</span>
+                    <span>{property.bathrooms} bai</span>
                 </div>
                 <div className="ap-card-actions">
-                    {!property.isApproved ? (
-                        <button onClick={() => onApprove(property.id)} className="ap-primary-btn">Aproba</button>
-                    ) : (
-                        <button onClick={() => onReject(property.id)} className="ap-danger-btn">Respinge</button>
-                    )}
-                    <button className="ap-secondary-btn" onClick={() => navigate(`/property/${property.id}`)}>Vezi</button>
+                    <button type="button" className="ap-secondary-btn" onClick={() => navigate(`/property/${property.id}`)}>
+                        Vezi
+                    </button>
+                    <button type="button" className="ap-secondary-btn" onClick={() => onEdit(property)}>
+                        Modifica
+                    </button>
+                    <button type="button" className="ap-danger-btn" onClick={() => onDelete(property)}>
+                        Sterge
+                    </button>
                 </div>
             </div>
         </div>

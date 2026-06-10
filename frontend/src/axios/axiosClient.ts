@@ -32,10 +32,12 @@ axiosClient.interceptors.response.use(
     (error) => {
         if (error.response) {
             const status = error.response.status;
-            const requestUrl = String(error.config?.url || '');
-            const isAuthRequest = requestUrl.includes('/auth/login') || requestUrl.includes('/auth/register');
-
-            if (status === 401 && !isAuthRequest) window.location.href = '/401';
+            if (status === 401) {
+                localStorage.removeItem(SESSION_KEY);
+                localStorage.removeItem(USER_KEY);
+                window.dispatchEvent(new Event(SESSION_CHANGED_EVENT));
+                window.location.href = '/login';
+            }
             else if (status === 403) window.location.href = '/403';
             else if (status >= 500) window.location.href = '/500';
         }

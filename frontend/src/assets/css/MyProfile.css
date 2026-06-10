@@ -885,3 +885,151 @@
 
     .mp-quick-actions .mp-action-card { padding: 14px; }
 }
+
+.nt-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding: 18px 20px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: #f8fbff;
+}
+
+.nt-toolbar-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.nt-toolbar-copy strong {
+    font-size: 1.5rem;
+    color: var(--text-dark);
+}
+
+.nt-toolbar-copy span {
+    color: var(--text-light);
+}
+
+.nt-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.nt-card {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px;
+    background: var(--white);
+    box-shadow: var(--shadow-sm);
+}
+
+.nt-card--unread {
+    border-color: rgba(37, 99, 235, 0.28);
+    background: linear-gradient(180deg, rgba(239, 246, 255, 0.88) 0%, #ffffff 100%);
+}
+
+.nt-card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 14px;
+}
+
+.nt-card-head h3 {
+    margin: 10px 0 0;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.25rem;
+    color: var(--text-dark);
+}
+
+.nt-type {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.nt-type--Reservation {
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.nt-type--Promotional {
+    background: #ecfdf5;
+    color: #047857;
+}
+
+.nt-type--System {
+    background: #fff7ed;
+    color: #c2410c;
+}
+
+.nt-time {
+    color: var(--text-light);
+    font-size: 0.875rem;
+    white-space: nowrap;
+}
+
+.nt-message {
+    margin: 0;
+    color: var(--text-dark);
+    line-height: 1.7;
+}
+
+.nt-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.nt-action {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--white);
+    color: var(--text-dark);
+    padding: 10px 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.nt-action:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: #eff6ff;
+}
+
+.nt-action--danger:hover {
+    border-color: #ef4444;
+    color: #ef4444;
+    background: #fff1f2;
+}
+
+@media (max-width: 700px) {
+    .nt-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .nt-card {
+        padding: 18px;
+    }
+
+    .nt-card-head {
+        flex-direction: column;
+    }
+
+    .nt-time {
+        white-space: normal;
+    }
+}

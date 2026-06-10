@@ -1,4 +1,5 @@
 export interface SessionData {
+    userId?: string;
     email: string;
     fullName: string;
     initials: string;
